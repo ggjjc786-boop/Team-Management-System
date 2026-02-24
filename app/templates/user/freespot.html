@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>免费车位 · GPT Team</title>
+    <link rel="stylesheet" href="/static/css/user.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/static/js/i18n.js"></script>
+    <style>
+        .fs-cta-row {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fs-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            background: linear-gradient(120deg, #b91c1c, #7f1d1d);
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 14px 30px rgba(127, 29, 29, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .fs-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 36px rgba(127, 29, 29, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12);
+        }
+
+        .fs-cta-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #d97706, #b91c1c);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #fff7eb;
+            letter-spacing: -0.02em;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+        }
+
+        .fs-cta-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .fs-cta-title {
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .fs-cta-sub {
+            font-size: 0.82rem;
+            color: #fef3c7;
+        }
+
+        .fs-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    {% if festive_enabled %}
+    <!-- 飘落梅花/樱花粒子 -->
+    <div class="falling-blossoms" aria-hidden="true" id="fallingBlossoms"></div>
+    <!-- 金色祥云 -->
+    <div class="golden-clouds" aria-hidden="true">
+        <div class="g-cloud g-cloud-1">☁</div>
+        <div class="g-cloud g-cloud-2">☁</div>
+        <div class="g-cloud g-cloud-3">☁</div>
+    </div>
+    <div class="festival-frame" aria-hidden="true"></div>
+
+    <div class="festival-couplets" aria-hidden="true">
+        <div class="couplet-wrapper couplet-left">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">天增岁月人增寿</div>
+                <div class="couplet couplet-back">爆竹声中辞旧岁</div>
+            </div>
+        </div>
+        <div class="couplet-wrapper couplet-right">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">春满乾坤福满门</div>
+                <div class="couplet couplet-back">梅花香里报新春</div>
+            </div>
+        </div>
+        <div class="crossbeam-wrapper">
+            <div class="crossbeam-inner">
+                <div class="couplet-crossbeam crossbeam-front">恭贺新春</div>
+                <div class="couplet-crossbeam crossbeam-back">万象更新</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 窗花装饰已移除 -->
+
+    <!-- 灯笼 -->
+    <div class="page-lanterns" aria-hidden="true">
+        <div class="lantern lantern-left">
+            <div class="lantern-line"></div>
+            <div class="lantern-ring lantern-ring-top"></div>
+            <div class="lantern-body">
+                <div class="lantern-glow"></div>
+                <span class="lantern-word">免费</span>
+            </div>
+            <div class="lantern-ring lantern-ring-bottom"></div>
+            <div class="lantern-tassel">
+                <div class="tassel-knot"></div>
+                <div class="tassel-fringe"></div>
+            </div>
+        </div>
+        <div class="lantern lantern-right">
+            <div class="lantern-line"></div>
+            <div class="lantern-ring lantern-ring-top"></div>
+            <div class="lantern-body">
+                <div class="lantern-glow"></div>
+                <span class="lantern-word">上车</span>
+            </div>
+            <div class="lantern-ring lantern-ring-bottom"></div>
+            <div class="lantern-tassel">
+                <div class="tassel-knot"></div>
+                <div class="tassel-fringe"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container">
+        <div class="header">
+            {% if festive_enabled %}
+            <div class="header-fu" aria-hidden="true">福</div>
+            {% endif %}
+            <h1><i data-lucide="zap" style="width:32px;height:32px;vertical-align:-4px;margin-right:4px;"></i> <span
+                    data-i18n="freespot_page_title">免费车位</span></h1>
+            <p class="subtitle" data-i18n="freespot_subtitle">✨ 无需兑换码 · 填写邮箱即可直接上车 ✨</p>
+            {% if festive_enabled %}
+            <div class="newyear-chip" data-i18n="newyear_chip">🐴 马年大吉</div>
+            {% endif %}
+        </div>
+
+        <!-- 登录与导航已移除 -->
+
+        <!-- 免费车位主面板 -->
+        <div class="card freespot-card">
+            <div class="card-header-strip">
+                <div class="card-header-icon freespot-icon"><i data-lucide="zap"></i></div>
+                <div>
+                    <h2 data-i18n="freespot_card_title">可用免费车位</h2>
+                    <p class="card-header-sub" data-i18n="freespot_card_sub">选择一个车位，输入邮箱即可加入 ChatGPT Team</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="freeSpotEmail"><i data-lucide="mail"
+                        style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i><span
+                        data-i18n="email_label">邮箱地址</span></label>
+                <div class="input-wrapper">
+                    <input type="email" id="freeSpotEmail" required placeholder="请输入您的邮箱地址" class="form-input"
+                        data-i18n-placeholder="email_placeholder">
+                </div>
+                <p class="form-help" data-i18n="email_help">邀请将发送到此邮箱，请确保可正常接收</p>
+            </div>
+
+            <div id="freeSpotList" class="freespot-list">
+                <div style="text-align:center;padding:2rem;color:#999;">
+                    <i data-lucide="loader" class="spin" style="width:24px;height:24px;"></i>
+                    <p style="margin-top:0.5rem;">加载中...</p>
+                </div>
+            </div>
+
+            <div id="freeSpotResult" style="margin-top: 1rem;"></div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+
+    {% if festive_enabled %}
+    <script src="/static/js/celebration.js"></script>
+    {% endif %}
+    <script src="/static/js/freespot.js"></script>
+    <script>
+        if (window.lucide) lucide.createIcons();
+        {% if festive_enabled %}
+        if (typeof startPhysicsBlossoms === 'function') startPhysicsBlossoms();
+        if (typeof initCoupletRotation === 'function') initCoupletRotation();
+        {% endif %}
+    </script>
+</body>
+
+</html>

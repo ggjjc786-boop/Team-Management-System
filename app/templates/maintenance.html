@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or '春节系统暂时关闭' }}</title>
+    <link rel="stylesheet" href="/static/css/user.css">
+    <style>
+        body.maintenance-page {
+            margin: 0 !important;
+            min-height: 100vh !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 24px !important;
+            box-sizing: border-box;
+            overflow-x: hidden !important;
+        }
+
+        .maintenance-container {
+            max-width: 760px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            margin: 0 auto;
+            padding-top: 0 !important;
+        }
+
+        .maintenance-card {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: none !important;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 251, 241, 0.92) !important;
+            border: 1px solid rgba(188, 31, 31, 0.18) !important;
+            box-shadow: 0 16px 34px rgba(75, 36, 19, 0.14) !important;
+        }
+
+        .maintenance-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(188, 31, 31, 0.28);
+            background: rgba(188, 31, 31, 0.08);
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .maintenance-line {
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .maintenance-title {
+            margin: 0 0 12px;
+            font-size: clamp(1.85rem, 2.6vw, 2.35rem);
+            line-height: 1.4;
+            color: #7f1d1d;
+        }
+
+        .maintenance-content {
+            margin: 0;
+            line-height: 1.9;
+            color: var(--text-dim);
+            white-space: pre-wrap;
+            font-size: 1rem;
+        }
+
+        .maintenance-countdown {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(188, 31, 31, 0.24);
+            background: linear-gradient(135deg, rgba(188, 31, 31, 0.08), rgba(244, 180, 61, 0.14));
+            color: #7f1d1d;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .maintenance-end-time {
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .maintenance-footer {
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(188, 31, 31, 0.25);
+            color: var(--text-muted);
+            font-size: 0.92rem;
+        }
+
+        .maintenance-video {
+            margin-top: 18px;
+            background: #fff;
+            border: 1px solid rgba(188, 31, 31, 0.18);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+        }
+
+        .video-frame {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .video-frame iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        @media (max-width: 640px) {
+            .maintenance-card {
+                padding: 1.6rem 1.1rem;
+            }
+        }
+
+        .maintenance-page .page-lanterns {
+            z-index: 4 !important;
+            pointer-events: none !important;
+        }
+
+        .maintenance-page .festival-couplets {
+            z-index: 3 !important;
+            pointer-events: none !important;
+        }
+
+        .maintenance-page .container,
+        .maintenance-page .maintenance-card {
+            z-index: 2 !important;
+        }
+
+        .maintenance-page .festival-frame {
+            z-index: 2 !important;
+        }
+
+        .maintenance-page .falling-blossoms,
+        .maintenance-page .golden-clouds {
+            z-index: 1 !important;
+        }
+
+        .maintenance-page::before,
+        .maintenance-page::after {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="maintenance-page">
+    <div class="falling-blossoms" aria-hidden="true" id="fallingBlossoms"></div>
+    <div class="golden-clouds" aria-hidden="true">
+        <div class="g-cloud g-cloud-1">☁</div>
+        <div class="g-cloud g-cloud-2">☁</div>
+        <div class="g-cloud g-cloud-3">☁</div>
+    </div>
+    <div class="festival-frame" aria-hidden="true"></div>
+    <div class="festival-couplets" aria-hidden="true">
+        <div class="couplet-wrapper couplet-left">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">天增岁月人增寿</div>
+                <div class="couplet couplet-back">爆竹声中辞旧岁</div>
+            </div>
+        </div>
+        <div class="couplet-wrapper couplet-right">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">春满乾坤福满门</div>
+                <div class="couplet couplet-back">梅花香里报新春</div>
+            </div>
+        </div>
+        <div class="crossbeam-wrapper">
+            <div class="crossbeam-inner">
+                <div class="couplet-crossbeam crossbeam-front">恭贺新春</div>
+                <div class="couplet-crossbeam crossbeam-back">万象更新</div>
+            </div>
+        </div>
+    </div>
+
+    <main class="container maintenance-container">
+        <section class="card maintenance-card">
+            <div class="maintenance-badge">🎊 春节公告</div>
+            <p class="maintenance-line">新春期间服务升级中</p>
+            <h1 class="maintenance-title">{{ title or '春节系统暂时关闭' }}</h1>
+            <p class="maintenance-content">{{ content or '系统正在进行新春维护与优化，请稍后再试。给您带来不便，敬请谅解。' }}</p>
+            <div class="maintenance-countdown" id="countdownText">正在计算维护剩余时间...</div>
+            <div class="maintenance-end-time" id="endTimeText"></div>
+            <div class="maintenance-footer">🧧 祝你新春快乐，万事胜意！</div>
+            {% if video_enabled and video_embed %}
+            <div class="maintenance-video">
+                <div class="video-frame">{{ video_embed|safe }}</div>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <script src="/static/js/maintenance_lantern.js"></script>
+    <script>
+        const PhysicsFall = (() => {
+            const G = 120;
+
+            function createParticle(container, char, opts = {}) {
+                const W = container.clientWidth || window.innerWidth;
+                const H = container.clientHeight || window.innerHeight;
+                const el = document.createElement('span');
+                el.className = 'phys-particle';
+                el.textContent = char;
+                el.style.fontSize = (opts.size || 18) + 'px';
+                el.style.opacity = '0';
+                container.appendChild(el);
+
+                const mass = 0.5 + Math.random() * 1.5;
+                const dragCoeff = 0.015 + Math.random() * 0.025;
+                const crossSection = (opts.size || 18) * 0.06;
+
+                return {
+                    el,
+                    x: opts.x !== undefined ? opts.x : (Math.random() * (W - 30) + 15),
+                    y: opts.y !== undefined ? opts.y : -(20 + Math.random() * 60),
+                    vx: opts.vx !== undefined ? opts.vx : (Math.random() - 0.5) * 30,
+                    vy: opts.vy !== undefined ? opts.vy : (Math.random() * 15),
+                    mass,
+                    drag: dragCoeff,
+                    cross: crossSection,
+                    rx: Math.random() * 6.28,
+                    ry: Math.random() * 6.28,
+                    rz: Math.random() * 6.28,
+                    wrx: (Math.random() - 0.5) * 3.5,
+                    wry: (Math.random() - 0.5) * 4.0,
+                    wrz: (Math.random() - 0.5) * 2.0,
+                    tumbleCoupling: 8 + Math.random() * 20,
+                    opacity: opts.opacity !== undefined ? opts.opacity : (0.3 + Math.random() * 0.5),
+                    fadeIn: true,
+                    maxY: H + 80,
+                    W,
+                };
+            }
+
+            function stepParticle(p, dt) {
+                const gForce = G * p.mass;
+                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy) + 0.01;
+                const dragMag = p.drag * p.cross * speed;
+                const dragX = -p.vx / speed * dragMag;
+                const dragY = -p.vy / speed * dragMag;
+                const tumbleLateral = Math.sin(p.rx) * Math.cos(p.ry * 0.7) * p.tumbleCoupling;
+
+                const ax = (dragX + tumbleLateral) / p.mass;
+                const ay = (gForce + dragY) / p.mass;
+
+                p.vx += ax * dt;
+                p.vy += ay * dt;
+                p.vy = Math.min(p.vy, 200);
+
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+
+                p.rx += p.wrx * dt;
+                p.ry += p.wry * dt;
+                p.rz += p.wrz * dt;
+
+                p.wrx *= (1 - 0.1 * dt);
+                p.wry *= (1 - 0.1 * dt);
+                p.wrz *= (1 - 0.08 * dt);
+
+                if (Math.random() < 0.02) {
+                    p.wrx += (Math.random() - 0.5) * 1.2;
+                    p.wry += (Math.random() - 0.5) * 1.2;
+                }
+
+                if (p.x < -30) p.x = p.W + 20;
+                if (p.x > p.W + 30) p.x = -20;
+
+                let alpha = p.opacity;
+                if (p.fadeIn && p.y > 0) p.fadeIn = false;
+                if (p.fadeIn) alpha *= Math.max(0, 1 - Math.abs(p.y) / 60);
+                if (p.y > p.maxY - 120) alpha *= Math.max(0, (p.maxY - p.y) / 120);
+
+                p.el.style.opacity = alpha.toFixed(3);
+                p.el.style.transform =
+                    'translate3d(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px,0)' +
+                    ' rotateX(' + (p.rx * 57.3).toFixed(1) + 'deg)' +
+                    ' rotateY(' + (p.ry * 57.3).toFixed(1) + 'deg)' +
+                    ' rotateZ(' + (p.rz * 57.3).toFixed(1) + 'deg)';
+            }
+
+            function resetParticle(p) {
+                p.y = -(20 + Math.random() * 60);
+                p.x = Math.random() * p.W;
+                p.vx = (Math.random() - 0.5) * 30;
+                p.vy = Math.random() * 10;
+                p.wrx = (Math.random() - 0.5) * 3.5;
+                p.wry = (Math.random() - 0.5) * 4.0;
+                p.wrz = (Math.random() - 0.5) * 2.0;
+                p.fadeIn = true;
+            }
+
+            function startLoop(container, chars, count, sizeRange, opacityRange) {
+                const particles = [];
+                for (let i = 0; i < count; i++) {
+                    const char = chars[Math.floor(Math.random() * chars.length)];
+                    const size = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
+                    const opacity = opacityRange[0] + Math.random() * (opacityRange[1] - opacityRange[0]);
+                    const p = createParticle(container, char, {
+                        size,
+                        opacity,
+                        y: -(Math.random() * (container.clientHeight || window.innerHeight) + 40),
+                    });
+                    p.y = Math.random() * (p.maxY + 60) - 60;
+                    particles.push(p);
+                }
+
+                let lastTs = 0;
+                let rafId = 0;
+
+                function tick(ts) {
+                    if (!lastTs) lastTs = ts;
+                    const dt = Math.min((ts - lastTs) / 1000, 0.05);
+                    lastTs = ts;
+
+                    for (let i = 0; i < particles.length; i++) {
+                        stepParticle(particles[i], dt);
+                        if (particles[i].y > particles[i].maxY) {
+                            resetParticle(particles[i]);
+                        }
+                    }
+                    rafId = requestAnimationFrame(tick);
+                }
+
+                rafId = requestAnimationFrame(tick);
+                return { stop: () => cancelAnimationFrame(rafId), particles };
+            }
+
+            return { startLoop };
+        })();
+
+        function startPhysicsBlossoms() {
+            const container = document.getElementById('fallingBlossoms');
+            if (!container) return;
+            const chars = ['🌸', '✿', '❀', '🏵', '💮', '🌺'];
+            const count = Math.min(14, Math.max(6, Math.floor(window.innerWidth / 120)));
+            PhysicsFall.startLoop(container, chars, count, [12, 26], [0.2, 0.55]);
+        }
+
+        (function () {
+            const countdownText = document.getElementById('countdownText');
+            const endTimeText = document.getElementById('endTimeText');
+            const endTimeRaw = "{{ (end_time or '') | escape_js }}";
+
+            if (!endTimeRaw) {
+                countdownText.textContent = '维护结束时间未设置，请稍后再试。';
+                endTimeText.textContent = '';
+                return;
+            }
+
+            const endTime = new Date(endTimeRaw);
+            if (Number.isNaN(endTime.getTime())) {
+                countdownText.textContent = '维护结束时间格式无效，请稍后再试。';
+                endTimeText.textContent = '';
+                return;
+            }
+
+            endTimeText.textContent = '预计结束时间：' + endTime.toLocaleString();
+
+            function renderCountdown() {
+                const now = new Date();
+                const diff = Math.floor((endTime.getTime() - now.getTime()) / 1000);
+
+                if (diff <= 0) {
+                    countdownText.textContent = '维护已结束，请刷新页面进入系统。';
+                    return;
+                }
+
+                const days = Math.floor(diff / 86400);
+                const hours = Math.floor((diff % 86400) / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                const seconds = diff % 60;
+
+                let text = '新春维护剩余：';
+                if (days > 0) {
+                    text += days + '天 ';
+                }
+                text += String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+                countdownText.textContent = text;
+            }
+
+            renderCountdown();
+            setInterval(renderCountdown, 1000);
+        })();
+
+        (function () {
+            var coupletSets = [
+                { left: '天增岁月人增寿', right: '春满乾坤福满门', cross: '恭贺新春' },
+                { left: '爆竹声中辞旧岁', right: '梅花香里报新春', cross: '万象更新' },
+                { left: '春回大地千山秀', right: '日暖神州万物荣', cross: '春意盎然' },
+                { left: '和顺一门有百福', right: '平安二字值千金', cross: '万事如意' },
+                { left: '一年四季春常在', right: '万紫千红永开花', cross: '喜迎新春' },
+                { left: '春风化雨山河美', right: '政策归心城乡欢', cross: '国泰民安' },
+                { left: '一帆风顺年年好', right: '万事如意步步高', cross: '吉星高照' },
+                { left: '百世岁月当代好', right: '千古江山今朝新', cross: '万象更新' },
+                { left: '喜居宝地千年旺', right: '福照家门万事兴', cross: '喜迎新春' },
+                { left: '一年四季行好运', right: '八方财宝进家门', cross: '家和业兴' },
+                { left: '绿竹别其三分景', right: '红梅正报万家春', cross: '春回大地' },
+                { left: '年年顺景则源广', right: '岁岁平安福寿多', cross: '吉祥如意' },
+                { left: '五更分两年年年称心', right: '一夜连两岁岁岁如意', cross: '恭贺新禧' },
+                { left: '大地流金万事通', right: '冬去春来万象新', cross: '欢度春节' },
+                { left: '日出江花红胜火', right: '春来江水绿如蓝', cross: '鸟语花香' },
+                { left: '风和日丽春常驻', right: '人寿年丰福永存', cross: '福星高照' },
+                { left: '春风入喜财入户', right: '岁月更新福满门', cross: '新春大吉' },
+                { left: '事事如意大吉祥', right: '家家顺心永安康', cross: '四季兴隆' },
+                { left: '迎新春江山锦绣', right: '辞旧岁事泰辉煌', cross: '春意盎然' },
+                { left: '旧岁又添几个喜', right: '新年更上一层楼', cross: '辞旧迎新' },
+                { left: '东风化雨山山翠', right: '政策归心处处春', cross: '春风化雨' },
+                { left: '家过小康欢乐日', right: '春回大地艳阳天', cross: '人寿年丰' },
+                { left: '多劳多得人人乐', right: '丰产丰收岁岁甜', cross: '国强民富' },
+                { left: '壮丽山河多异彩', right: '文明国度遍高风', cross: '山河壮丽' },
+                { left: '财连亨通步步高', right: '日子红火腾腾起', cross: '迎春接福' },
+                { left: '福旺财旺运气旺', right: '家兴人兴事业兴', cross: '万事亨通' },
+                { left: '大地歌唤彩云追月', right: '银河曲唱锦绣山河', cross: '锦绣前程' },
+                { left: '一门瑞气御风飞翔', right: '满院祥光逐日腾辉', cross: '祥光普照' },
+                { left: '东风送暖文明第宅', right: '喜气临门和睦人家', cross: '阖家欢乐' },
+                { left: '岁通盛世家家富', right: '人遇年华个个欢', cross: '皆大欢喜' },
+                { left: '丹凤呈祥龙献瑞', right: '红桃贺岁杏迎春', cross: '福满人间' },
+                { left: '五湖四海皆春色', right: '万水千山尽得辉', cross: '万象更新' },
+                { left: '雪里江山美如画', right: '花间岁月甜似蜜', cross: '美满幸福' },
+                { left: '花开富贵家家乐', right: '灯照吉祥岁岁欢', cross: '花好月圆' },
+                { left: '迎喜迎春迎富贵', right: '接财接福接平安', cross: '喜气盈门' },
+                { left: '创大业千秋昌盛', right: '展宏图再就辉煌', cross: '大展鸿图' },
+                { left: '一年好运随春到', right: '四季彩云滚滚来', cross: '万事胜意' },
+                { left: '丹凤呈祥龙献瑞', right: '紫气东来福满堂', cross: '龙凤呈祥' },
+                { left: '庆佳节合家团聚', right: '迎新春满院生辉', cross: '合家欢乐' },
+                { left: '春临大地百花艳', right: '节至人间万象新', cross: '春满人间' },
+                { left: '万里春风催桃李', right: '一腔热血育新人', cross: '春风化雨' },
+                { left: '黄莺鸣翠柳飞舞', right: '紫燕剪春风送暖', cross: '莺歌燕舞' },
+                { left: '好时代好风光好运', right: '新社会新气象新春', cross: '日新月异' },
+                { left: '处处春光好年年入画', right: '家家喜气浓岁岁平安', cross: '四海同春' },
+                { left: '财源滚滚随春到', right: '喜气洋洋伴福来', cross: '财源广进' },
+                { left: '红梅含苞傲冬雪', right: '绿柳吐絮迎新春', cross: '欢度春节' },
+                { left: '百花齐放春光好', right: '万马奔腾气象新', cross: '马到成功' },
+                { left: '日日财源顺意来', right: '年年福禄随春到', cross: '新春快乐' },
+                { left: '瑞气盈门幸福家', right: '祥光普照如意年', cross: '瑞雪丰年' },
+                { left: '张灯结彩迎新春', right: '欢天喜地度佳节', cross: '普天同庆' }
+            ];
+
+            var idx = 0;
+            var leftWrap = document.querySelector('.couplet-wrapper.couplet-left');
+            var rightWrap = document.querySelector('.couplet-wrapper.couplet-right');
+            var crossWrap = document.querySelector('.crossbeam-wrapper');
+            if (!leftWrap || !rightWrap || !crossWrap) return;
+
+            var leftFront = leftWrap.querySelector('.couplet-front');
+            var leftBack = leftWrap.querySelector('.couplet-back');
+            var rightFront = rightWrap.querySelector('.couplet-front');
+            var rightBack = rightWrap.querySelector('.couplet-back');
+            var crossFront = crossWrap.querySelector('.crossbeam-front');
+            var crossBack = crossWrap.querySelector('.crossbeam-back');
+
+            setInterval(function () {
+                var nextIdx = (idx + 1) % coupletSets.length;
+                var nextSet = coupletSets[nextIdx];
+                var isFlipped = leftWrap.classList.contains('flipped');
+
+                if (isFlipped) {
+                    leftFront.textContent = nextSet.left;
+                    rightFront.textContent = nextSet.right;
+                    crossFront.textContent = nextSet.cross;
+                } else {
+                    leftBack.textContent = nextSet.left;
+                    rightBack.textContent = nextSet.right;
+                    crossBack.textContent = nextSet.cross;
+                }
+
+                leftWrap.classList.toggle('flipped');
+                rightWrap.classList.toggle('flipped');
+                crossWrap.classList.toggle('flipped');
+                idx = nextIdx;
+            }, 5000);
+        })();
+
+        startPhysicsBlossoms();
+    </script>
+</body>
+</html>

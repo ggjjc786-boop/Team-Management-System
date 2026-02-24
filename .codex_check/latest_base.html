@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GPT Team 管理系统{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="theme-premium-dark">
+    {% if user %}
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h1>GPT Team 管理系统</h1>
+            </div>
+            <div class="navbar-menu">
+                <span class="navbar-user">管理员</span>
+                <button onclick="logout()" class="btn btn-secondary">登出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="menu-item {% if active_page == 'dashboard' %}active{% endif %}">
+                    <a href="/admin">
+                        <span class="menu-icon" data-lucide="layout-dashboard"></span>
+                        <span class="menu-text">控制台</span>
+                    </a>
+                </li>
+                <li class="menu-item {% if active_page == 'codes' %}active{% endif %}">
+                    <a href="/admin/codes">
+                        <span class="menu-icon" data-lucide="ticket"></span>
+                        <span class="menu-text">兑换码管理</span>
+                    </a>
+                </li>
+                <li class="menu-item {% if active_page == 'records' %}active{% endif %}">
+                    <a href="/admin/records">
+                        <span class="menu-icon" data-lucide="file-text"></span>
+                        <span class="menu-text">使用记录</span>
+                    </a>
+                </li>
+                <li class="menu-item {% if active_page == 'settings' %}active{% endif %}">
+                    <a href="/admin/settings">
+                        <span class="menu-icon" data-lucide="settings"></span>
+                        <span class="menu-text">系统设置</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+    <!-- 未登录时的内容 -->
+    <div class="auth-container">
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>&copy; 2026 GPT Team 管理系统 v0.1.0</p>
+    </footer>
+
+    <!-- 导入 Team 模态框 -->
+    <div id="importTeamModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>导入 Team</h3>
+                <button class="modal-close" onclick="hideModal('importTeamModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="modal-tab-btn active"
+                        onclick="switchModalTab('importTeamModal', 'singleImport')">单个导入</button>
+                    <button class="modal-tab-btn"
+                        onclick="switchModalTab('importTeamModal', 'batchImport')">批量导入</button>
+                </div>
+
+                <div id="singleImport" class="import-panel">
+                    <form id="singleImportForm" onsubmit="handleSingleImport(event)">
+                        <div class="form-group">
+                            <label>Access Token (AT) <span class="required">*</span></label>
+                            <textarea name="accessToken" class="form-control" rows="4"
+                                placeholder="eyJhbGciOiJSUzI1Ni..." required></textarea>
+                            <small class="form-text">必填项，以 eyJ 开头的 JWT Token</small>
+                        </div>
+                        <div class="form-group">
+                            <label>邮箱</label>
+                            <input type="email" name="email" class="form-control" placeholder="admin@example.com">
+                            <small class="form-text">可选，如果不填写将从 Token 中自动提取</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Account ID</label>
+                            <input type="text" name="accountId" class="form-control"
+                                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                            <small class="form-text">可选，如果不填写将从 API 自动获取</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">导入</button>
+                    </form>
+                </div>
+
+                <div id="batchImport" class="import-panel" style="display: none;">
+                    <form id="batchImportForm" onsubmit="handleBatchImport(event)">
+                        <div class="form-group">
+                            <label>批量导入内容 <span class="required">*</span></label>
+                            <textarea name="batchContent" class="form-control" rows="8" placeholder="一行一个 AT Token..."
+                                required></textarea>
+                        </div>
+                        <div id="batchResultsContainer" style="display: none; margin-bottom: 1rem;">
+                            <h4>导入结果</h4>
+                            <div id="batchResults"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">批量导入</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 生成兑换码 模态框 -->
+    <div id="generateCodeModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>生成兑换码</h3>
+                <button class="modal-close" onclick="hideModal('generateCodeModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="modal-tab-btn active"
+                        onclick="switchModalTab('generateCodeModal', 'singleGenerate')">单个生成</button>
+                    <button class="modal-tab-btn"
+                        onclick="switchModalTab('generateCodeModal', 'batchGenerate')">批量生成</button>
+                </div>
+
+                <div id="singleGenerate" class="card-body">
+                    <form onsubmit="generateSingle(event)">
+                        <div class="form-group">
+                            <label>自定义兑换码 (可选)</label>
+                            <input type="text" name="customCode" class="form-control" placeholder="留空则自动生成"
+                                maxlength="32">
+                        </div>
+                        <div class="form-group">
+                            <label>有效期 (天数, 可选)</label>
+                            <input type="number" name="expiresDays" class="form-control" placeholder="留空则永久有效" min="1"
+                                max="3650">
+                        </div>
+                        <button type="submit" class="btn btn-primary">生成兑换码</button>
+                    </form>
+                    <div id="singleResult" class="result-box" style="display: none;">
+                        <h4>生成成功</h4>
+                        <div class="code-display">
+                            <code id="generatedCode"></code>
+                            <button onclick="copyCode()" class="btn btn-sm btn-secondary">复制</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="batchGenerate" class="card-body" style="display: none;">
+                    <form onsubmit="generateBatch(event)">
+                        <div class="form-group">
+                            <label>生成数量 *</label>
+                            <input type="number" name="count" class="form-control" placeholder="请输入生成数量" min="1"
+                                max="1000" required>
+                        </div>
+                        <div class="form-group">
+                            <label>有效期 (天数, 可选)</label>
+                            <input type="number" name="expiresDays" class="form-control" placeholder="留空则永久有效" min="1"
+                                max="3650">
+                        </div>
+                        <button type="submit" class="btn btn-primary">批量生成</button>
+                    </form>
+                    <div id="batchResult" class="result-box" style="display: none;">
+                        <h4>批量生成成功</h4>
+                        <p>成功生成 <strong id="batchTotal">0</strong> 个兑换码</p>
+                        <textarea id="batchCodes" readonly rows="5" class="form-control"
+                            style="margin: 10px 0;"></textarea>
+                        <button onclick="copyBatchCodes()" class="btn btn-sm btn-secondary">复制全部</button>
+                        <button onclick="downloadCodes()" class="btn btn-sm btn-secondary">下载</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成员管理 模态框 -->
+    <div id="manageMembersModal" class="modal-overlay">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modalTeamName">Team 成员管理</h3>
+                    <small id="modalTeamEmail" class="text-muted" style="display: block; margin-top: 4px;"></small>
+                </div>
+                <button class="modal-close" onclick="hideModal('manageMembersModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 添加成员表单 -->
+                <div class="content-section"
+                    style="padding: 1.25rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.03);">
+                    <form id="addMemberForm" onsubmit="handleAddMember(event)"
+                        style="display: flex; gap: 1rem; align-items: flex-end;">
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label for="memberEmail">新增成员邮箱</label>
+                            <input type="email" id="memberEmail" name="email" class="form-control"
+                                placeholder="user@example.com" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="addMemberSubmitBtn">
+                            <i data-lucide="user-plus"></i> 添加
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 已加入成员 -->
+                <div class="content-section" style="margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; color: var(--success);">已加入成员</h4>
+                    <div class="table-container" style="max-height: 250px; overflow-y: auto; margin: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>邮箱</th>
+                                    <th style="width: 100px;">角色</th>
+                                    <th style="width: 160px;">加入时间</th>
+                                    <th style="text-align: right; width: 100px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalJoinedMembersTableBody">
+                                <!-- 动态加载内容 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 待加入成员 -->
+                <div class="content-section" style="margin: 0;">
+                    <h4 style="margin-bottom: 1rem; color: var(--warning);">待加入成员 (邀请中)</h4>
+                    <div class="table-container" style="max-height: 250px; overflow-y: auto; margin: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>邮箱</th>
+                                    <th style="width: 100px;">角色</th>
+                                    <th style="width: 160px;">邀请时间</th>
+                                    <th style="text-align: right; width: 100px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalInvitedMembersTableBody">
+                                <!-- 动态加载内容 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

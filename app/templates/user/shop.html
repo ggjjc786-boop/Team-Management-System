@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>积分商城 - GPT Team</title>
+    <link rel="stylesheet" href="/static/css/user.css">
+    <style>
+        body { background: radial-gradient(circle at 10% 10%, rgba(255,230,195,0.5), transparent 40%), radial-gradient(circle at 85% 15%, rgba(255,210,190,0.4), transparent 45%), linear-gradient(180deg, #fff9f2, #fdf3e6 48%, #fffaf4 100%); }
+        .shop-shell { max-width: 1040px; margin: 30px auto 80px; padding: 0 18px; display:flex; flex-direction:column; gap:14px; }
+        .shop-hero { background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:18px; padding:18px 20px; box-shadow:0 14px 30px rgba(15,23,42,0.08); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+        .shop-title { margin:0; font-size:1.6rem; color:#b91c1c; font-weight:800; }
+        .shop-sub { color:#475569; margin:4px 0 0; }
+        .hero-actions { display:flex; gap:10px; flex-wrap:wrap; }
+        .points-badge { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; background:linear-gradient(135deg, #0f172a, #1f2937); color:#e2e8f0; font-weight:700; box-shadow:0 10px 20px rgba(15,23,42,0.18); }
+        .products-wrap { background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:18px; padding:18px; box-shadow:0 14px 30px rgba(15,23,42,0.08); }
+        .products-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:14px; }
+        .product-card { border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:16px; background:linear-gradient(135deg, #fff, #fff7eb); display:flex; flex-direction:column; gap:10px; min-height:200px; }
+        .product-head { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+        .product-name { font-weight:800; font-size:1.05rem; color:#0f172a; }
+        .price-pill { background:#0f172a; color:#f8fafc; padding:6px 10px; border-radius:10px; font-weight:700; font-size:0.95rem; }
+        .product-desc { margin:0; color:#475569; min-height:38px; }
+        .product-status { font-size:14px; color:#0f172a; min-height:20px; }
+        .btn-ghost { background:#fff; color:#b91c1c; border:1px solid rgba(0,0,0,0.08); }
+        .btn-disabled { opacity:0.55; cursor:not-allowed; }
+        .latest-order { margin-top:14px; padding:12px; border-radius:12px; background:#f8fafc; border:1px dashed #cbd5e1; color:#0f172a; }
+        .announcement { margin-top:8px; padding:12px 14px; border-radius:12px; background:#fff7eb; border:1px solid #ffe4c7; color:#b45309; }
+        .detail-card { margin-top:14px; padding:16px; border-radius:14px; background:#fff; border:1px solid rgba(0,0,0,0.05); box-shadow:0 10px 24px rgba(15,23,42,0.08); display:grid; grid-template-columns:1.1fr 1fr; gap:16px; align-items:center; }
+        .detail-info h3 { margin:0 0 8px; font-size:1.3rem; color:#0f172a; }
+        .detail-info p { margin:0 0 10px; color:#475569; }
+        .detail-price { font-weight:800; color:#b91c1c; font-size:1.1rem; }
+        .detail-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+        .linuxdo-cta { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:14px; background:linear-gradient(120deg, #111827, #0f172a 55%, #1f2937); color:#f8fafc; text-decoration:none; box-shadow:0 12px 28px rgba(15,23,42,0.35), 0 0 0 1px rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); transition: transform 0.2s ease, box-shadow 0.2s ease; min-width: 240px; }
+        .linuxdo-cta:hover { transform: translateY(-2px); box-shadow:0 16px 34px rgba(15,23,42,0.4), 0 0 0 1px rgba(255,255,255,0.1); }
+        .linuxdo-logo { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg, #d97706, #b91c1c); display:flex; align-items:center; justify-content:center; font-weight:800; letter-spacing:-0.02em; color:#fff7eb; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); font-size:0.95rem; }
+        .linuxdo-text { display:flex; flex-direction:column; line-height:1.2; }
+        .linuxdo-title { font-weight:800; font-size:1rem; }
+        .linuxdo-sub { font-size:0.82rem; color:#cbd5e1; }
+        .login-card { padding:16px; border-radius:14px; background:#fff; border:1px solid rgba(0,0,0,0.05); box-shadow:0 12px 26px rgba(15,23,42,0.08); display:flex; flex-direction:column; gap:12px; }
+        @media (max-width: 760px) { .detail-card { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+    <div class="shop-shell">
+        <div class="shop-hero">
+            <div>
+                <div class="shop-title">积分商城</div>
+                <p class="shop-sub">使用积分购买 GPT Team 兑换码</p>
+                {% if announcement and announcement.enabled and announcement.content %}
+                <div class="announcement">公告：{{ announcement.content }}</div>
+                {% endif %}
+            </div>
+            <div class="hero-actions">
+                <a class="btn btn-ghost" href="/user/points" style="text-decoration:none;">返回用户中心</a>
+                <a class="btn btn-ghost" href="/" style="text-decoration:none;">返回首页</a>
+                {% if user_data %}
+                <span class="points-badge">当前积分 {{ user_data.points }}</span>
+                {% else %}
+                <a class="linuxdo-cta" href="/user/auth/login">
+                    <div class="linuxdo-logo">LD</div>
+                    <div class="linuxdo-text">
+                        <div class="linuxdo-title">使用 LinuxDo 登录</div>
+                        <div class="linuxdo-sub">解锁积分商城 / 免费车位</div>
+                    </div>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="products-wrap">
+            {% if user_data %}
+            {% if shop_items %}
+            <div class="products-grid">
+                {% for item in shop_items %}
+                <div class="product-card" data-item-key="{{ item.key }}" data-item-cost="{{ item.cost }}">
+                    <div class="product-head">
+                        <div class="product-name">{{ item.name }}</div>
+                        <div class="price-pill">{{ item.cost }} 积分</div>
+                    </div>
+                    <p class="product-desc">{{ item.desc or '虚拟商品' }}</p>
+                    <div class="product-status"></div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="detail-card" id="detailCard" style="display:none;">
+                <div class="detail-info">
+                    <h3 id="detailName"></h3>
+                    <p id="detailDesc"></p>
+                    <div class="detail-price" id="detailPrice"></div>
+                    <div class="detail-actions">
+                        <button class="btn btn-primary" id="detailBuy">立即购买</button>
+                        <span class="points-badge" id="detailPoints" style="padding:6px 10px; font-size:0.95rem;"></span>
+                    </div>
+                    <div class="product-status" id="detailStatus"></div>
+                </div>
+                <div>
+                    <div style="border-radius:12px; background:linear-gradient(135deg,#0f172a,#1f2937); color:#f8fafc; padding:16px; height:100%; display:flex; flex-direction:column; gap:10px;">
+                        <div style="font-weight:700;">兑换码说明</div>
+                        <div style="font-size:14px; color:#e2e8f0; line-height:1.5;">购买后将消耗积分并自动发放 GPT Team 兑换码，可前往“用户中心-积分商城订单”查看。</div>
+                        <div style="font-size:12px; color:#cbd5e1;">请确保已登录 LinuxDo 账号；积分不足时无法购买。</div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p style="margin:0; color:#475569;">暂无上架商品，请稍后再来。</p>
+            {% endif %}
+
+            {% if latest_order %}
+            <div class="latest-order">
+                最近订单：{{ latest_order.created_at|format_datetime }} · 消耗 {{ latest_order.points_cost }} 积分 · 兑换码 {{ latest_order.redemption_code or '待生成' }}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="login-card">
+                <p style="margin:0; color:#0f172a; font-weight:700;">请先使用 LinuxDo 登录后再购买兑换码</p>
+                <p style="margin:0; color:#475569;">登录后即可查看积分、购买兑换码，并查看订单记录。</p>
+                <a href="/user/auth/login" class="linuxdo-cta" style="max-width:320px;">
+                    <div class="linuxdo-logo">LD</div>
+                    <div class="linuxdo-text">
+                        <div class="linuxdo-title">立即登录 LinuxDo</div>
+                        <div class="linuxdo-sub">安全授权 · 无需新账号</div>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+    const cards = document.querySelectorAll('.product-card');
+    const detailCard = document.getElementById('detailCard');
+    const detailName = document.getElementById('detailName');
+    const detailDesc = document.getElementById('detailDesc');
+    const detailPrice = document.getElementById('detailPrice');
+    const detailPoints = document.getElementById('detailPoints');
+    const detailStatus = document.getElementById('detailStatus');
+    const detailBuy = document.getElementById('detailBuy');
+    const userPoints = {{ user_data.points if user_data else 0 }};
+    let currentKey = null;
+
+    function setStatus(el, text, isError=false) {
+        if (!el) return;
+        el.textContent = text || '';
+        el.style.color = isError ? '#b91c1c' : '#0f172a';
+    }
+
+    function selectCard(card) {
+        if (!card) return;
+        currentKey = card.dataset.itemKey;
+        const cost = parseInt(card.dataset.itemCost || '0', 10);
+        detailName.textContent = card.dataset.itemName || '商品';
+        detailDesc.textContent = card.dataset.itemDesc || '虚拟商品';
+        detailPrice.textContent = `消耗 ${cost} 积分`;
+        detailPoints.textContent = `当前积分 ${userPoints}`;
+        setStatus(detailStatus, '');
+        detailBuy.disabled = false;
+        detailBuy.classList.remove('btn-disabled');
+        if (userPoints < cost) {
+            detailBuy.disabled = true;
+            detailBuy.classList.add('btn-disabled');
+            setStatus(detailStatus, `需 ${cost} 积分，余额 ${userPoints}` , true);
+        }
+        detailCard.style.display = 'grid';
+    }
+
+    cards.forEach(card => {
+        card.addEventListener('click', () => selectCard(card));
+    });
+    if (cards.length) selectCard(cards[0]);
+
+    if (detailBuy) {
+        detailBuy.addEventListener('click', async () => {
+            if (!currentKey) return;
+            detailBuy.disabled = true;
+            detailBuy.classList.add('btn-disabled');
+            setStatus(detailStatus, '正在购买...');
+            try {
+                const res = await fetch('/user/api/shop/buy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_key: currentKey })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.detail || data.error || '购买失败');
+                setStatus(detailStatus, '购买成功！请在用户中心查看兑换码。');
+            } catch (err) {
+                setStatus(detailStatus, err.message || '购买失败，请重试', true);
+            } finally {
+                detailBuy.disabled = false;
+                detailBuy.classList.remove('btn-disabled');
+            }
+        });
+    }
+    </script>
+</body>
+</html>

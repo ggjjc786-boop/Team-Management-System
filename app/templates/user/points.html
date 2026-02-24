@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心 - LinuxDo 登录</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { background: radial-gradient(circle at 10% 10%, rgba(255,230,195,0.5), transparent 40%), radial-gradient(circle at 85% 15%, rgba(255,210,190,0.4), transparent 45%), linear-gradient(180deg, #fff9f2, #fdf3e6 48%, #fffaf4 100%); }
+        .user-shell { max-width: 1040px; margin: 40px auto 60px; padding: 0 18px; }
+        .hero { position: relative; padding: 28px; border-radius: 18px; overflow: hidden; background: linear-gradient(135deg, #f87171, #f59e0b); color: #fff; box-shadow: 0 18px 38px rgba(249,115,22,0.18); }
+        .hero::after { content:""; position:absolute; inset:0; background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18), transparent 40%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.12), transparent 42%); pointer-events:none; }
+        .hero-main { display:flex; align-items:center; justify-content:space-between; gap:18px; position:relative; z-index:1; }
+        .hero-info h2 { margin:0 0 6px; font-size:1.9rem; font-weight:800; letter-spacing:0.4px; }
+        .hero-info .meta { color: rgba(255,255,255,0.9); font-size:0.98rem; }
+        .hero-actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+        .pill { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px; background: rgba(255,255,255,0.14); color:#fff; font-weight:600; }
+        .avatar { width:64px; height:64px; border-radius:50%; border:3px solid rgba(255,255,255,0.65); object-fit:cover; box-shadow:0 10px 26px rgba(0,0,0,0.18); }
+        .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:18px; }
+        .uc-card { background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:14px; padding:18px; box-shadow:0 10px 26px rgba(15,23,42,0.08); }
+        .uc-card h3 { margin:0 0 8px; color:#0f172a; font-size:1.05rem; }
+        .uc-card p { margin:0 0 12px; color:#475569; }
+        .tables { display:grid; grid-template-columns:1fr; gap:14px; margin-top:18px; }
+        @media (min-width: 960px) { .tables { grid-template-columns:1fr 1fr; } }
+        .table-wrap { background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:14px; padding:14px; box-shadow:0 10px 26px rgba(15,23,42,0.08); }
+        .table-wrap h3 { margin:0 0 10px; color:#0f172a; }
+        .table { width:100%; border-collapse:collapse; font-size:0.92rem; }
+        .table th, .table td { padding:10px; border-bottom:1px solid rgba(0,0,0,0.04); text-align:left; color:#1f2937; }
+        .table th { color:#64748b; font-weight:600; }
+        .badge-dark { background:#0f172a; color:#e2e8f0; border-radius:999px; padding:6px 12px; display:inline-flex; align-items:center; gap:6px; }
+        .btn-ghost { background:#fff; color:#0f172a; border:1px solid rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+    <div class="user-shell">
+        <div class="hero">
+            {% if not user_data %}
+            <div class="hero-main">
+                <div class="hero-info">
+                    <h2>欢迎来到 GPT Team</h2>
+                    <div class="meta">使用 LinuxDo 账号登录，每日签到领积分，积分商城兑换码</div>
+                </div>
+                <div class="hero-actions">
+                    <a href="/user/auth/login" class="btn btn-primary" style="background:#fff;color:#b91c1c;">使用 LinuxDo 登录</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="hero-main">
+                <div class="hero-info">
+                    <h2>{{ user_data.display_name or user_data.username }}</h2>
+                    <div class="meta">@{{ user_data.username }} {% if user_data.email %}· {{ user_data.email }}{% endif %}</div>
+                    <div class="hero-actions" style="margin-top:10px;">
+                        <span class="pill">当前积分 {{ user_data.points }}</span>
+                        <span class="pill" style="background:rgba(0,0,0,0.18);">每日签到 +{{ daily_points }}</span>
+                        <a class="btn btn-ghost" href="/" style="text-decoration:none;">返回首页</a>
+                        <button class="btn btn-ghost" onclick="logoutLinuxDo()">退出</button>
+                    </div>
+                </div>
+                <img src="{{ user_data.avatar_url or 'https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/user.svg' }}" alt="avatar" class="avatar" style="width:78px;height:78px;">
+            </div>
+            {% endif %}
+        </div>
+
+        {% if user_data %}
+        <div class="grid">
+            <div class="uc-card">
+                <h3>每日签到</h3>
+                <p>每日首次签到可获得 {{ daily_points }} 积分。</p>
+                <button class="btn btn-primary" onclick="dailySignIn()">立即签到</button>
+                <div id="signinResult" style="margin-top:8px;font-size:14px;color:#0f172a;"></div>
+            </div>
+            <div class="uc-card">
+                <h3>积分商城</h3>
+                <p>商品：GPT Team 兑换码（{{ redeem_cost }} 积分）</p>
+                <a class="btn btn-primary" href="/user/shop">前往积分商城</a>
+            </div>
+            <div class="uc-card">
+                <h3>免费车位</h3>
+                <p>无需积分，直接选择空位填写邮箱即可上车。</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                    <a class="btn btn-primary" href="/user/freespot">进入免费车位</a>
+                    <a class="btn btn-ghost" href="/user/waitingroom" style="text-decoration:none;">候车室</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="tables">
+            <div class="table-wrap">
+                <h3>最近积分记录</h3>
+                {% if recent_points %}
+                <div style="overflow:auto;">
+                    <table class="table" style="min-width:520px;">
+                        <thead>
+                            <tr><th>时间</th><th>类型</th><th>变动</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in recent_points %}
+                            <tr>
+                                <td>{{ tx.created_at|format_datetime }}</td>
+                                <td>{{ tx.type }}</td>
+                                <td>{{ tx.change }}</td>
+                                <td>{{ tx.description or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p style="color:#64748b;">暂无积分记录</p>
+                {% endif %}
+            </div>
+
+            <div class="table-wrap">
+                <h3>最近商城订单</h3>
+                {% if recent_orders %}
+                <div style="overflow:auto;">
+                    <table class="table" style="min-width:520px;">
+                        <thead>
+                            <tr><th>时间</th><th>订单号</th><th>消耗积分</th><th>兑换码</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>{{ order.created_at|format_datetime }}</td>
+                                <td>{{ order.order_no }}</td>
+                                <td>{{ order.points_cost }}</td>
+                                <td>{{ order.redemption_code or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p style="color:#64748b;">暂无商城订单</p>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="uc-card" style="margin-top:16px;">
+            <h3>还未登录</h3>
+            <p style="color:#475569;">登录后即可签到赚积分、积分商城兑换码。</p>
+            <a href="/user/auth/login" class="btn btn-primary">使用 LinuxDo 登录 / 注册</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function dailySignIn() {
+            const el = document.getElementById('signinResult');
+            el.textContent = '签到中...';
+            try {
+                const res = await fetch('/user/api/sign-in', { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || '签到失败');
+                }
+                el.textContent = `${data.message}，当前积分 ${data.points}`;
+                setTimeout(() => window.location.reload(), 600);
+            } catch (error) {
+                el.textContent = error.message;
+            }
+        }
+
+        async function buyCode() {
+            const el = document.getElementById('buyResult');
+            el.textContent = '购买中...';
+            try {
+                const res = await fetch('/user/api/shop/buy', { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || '购买失败');
+                }
+                el.textContent = `购买成功，兑换码：${data.code}，剩余积分：${data.points}`;
+                setTimeout(() => window.location.reload(), 600);
+            } catch (error) {
+                el.textContent = error.message;
+            }
+        }
+
+        async function logoutLinuxDo() {
+            await fetch('/user/auth/logout', { method: 'POST' });
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>

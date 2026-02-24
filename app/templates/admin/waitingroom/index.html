@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+
+{% block title %}候车室管理 - GPT Team 管理系统{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🚏 候车室管理</h2>
+</div>
+
+<!-- 统计卡片 -->
+<div class="stats-container">
+    <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+            <div class="stat-value">{{ total_count }}</div>
+            <div class="stat-label">总候车人数</div>
+        </div>
+    </div>
+    <div class="stat-card stat-warning">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+            <div class="stat-value">{{ waiting_count }}</div>
+            <div class="stat-label">等待中</div>
+        </div>
+    </div>
+    <div class="stat-card stat-info">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-content">
+            <div class="stat-value">{{ priority_count }}</div>
+            <div class="stat-label">优先用户</div>
+        </div>
+    </div>
+    <div class="stat-card stat-success">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+            <div class="stat-value">{{ notified_count }}</div>
+            <div class="stat-label">已通知</div>
+        </div>
+    </div>
+</div>
+
+<!-- 操作按钮 -->
+<div class="content-section">
+    <div class="section-header">
+        <h3>操作</h3>
+    </div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="button" class="btn btn-primary" onclick="notifyAllWaiting()" id="notifyAllBtn">
+            📧 通知所有候车用户
+        </button>
+        <button type="button" class="btn btn-primary" onclick="notifyPriorityWaiting()" id="notifyPriorityBtn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+            ⚡ 仅通知优先用户
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="clearNotifiedWaiting()">
+            🗑️ 清除已通知记录
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="location.reload()">
+            🔄 刷新
+        </button>
+    </div>
+</div>
+
+<!-- 发送专属邀请 -->
+{% if exclusive_teams %}
+<div class="content-section">
+    <div class="section-header">
+        <h3>🔒 发送打赏专属邀请</h3>
+        <p style="font-size:0.825rem;color:var(--text-muted);margin-top:0.3rem;">向打赏用户发送专属上车链接（有效期 5 小时）</p>
+    </div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+            <label style="font-size:0.825rem;color:#666;display:block;margin-bottom:0.3rem;">专属 Team</label>
+            <select id="exclusiveTeamId" style="padding:0.5rem 0.75rem;border:1px solid var(--border-color);border-radius:6px;font-size:0.875rem;min-width:200px;">
+                {% for t in exclusive_teams %}
+                <option value="{{ t.id }}">{{ t.team_name }} ({{ t.current_members }}/{{ t.max_members }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="flex:1;min-width:280px;">
+            <label style="font-size:0.825rem;color:#666;display:block;margin-bottom:0.3rem;">用户邮箱 <span style="color:#999;">(每行一个，支持批量)</span></label>
+            <textarea id="exclusiveEmails" placeholder="user1@example.com&#10;user2@example.com&#10;user3@example.com"
+                rows="3" style="padding:0.5rem 0.75rem;border:1px solid var(--border-color);border-radius:6px;font-size:0.875rem;width:100%;resize:vertical;font-family:inherit;"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" id="sendExclusiveBtn" onclick="sendExclusiveInvite()"
+            style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">
+            🔗 批量发送专属链接
+        </button>
+        {% if priority_count > 0 %}
+        <button type="button" class="btn btn-primary" id="sendPriorityBtn" onclick="sendToPriorityUsers()"
+            style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+            ⚡ 一键发送给所有优先用户 ({{ priority_count }})
+        </button>
+        {% endif %}
+    </div>
+    <div id="exclusiveResult" style="margin-top:0.75rem;display:none;"></div>
+</div>
+{% endif %}
+
+<!-- IDC 订单列表 -->
+{% if idc_orders %}
+<div class="content-section">
+    <div class="section-header">
+        <h3>💰 IDC 打赏订单</h3>
+    </div>
+    <div class="table-container" style="max-height:300px;overflow-y:auto;">
+        <table class="data-table" style="font-size:0.85rem;">
+            <thead>
+                <tr>
+                    <th>订单号</th>
+                    <th>邮箱</th>
+                    <th>金额</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>支付时间</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in idc_orders %}
+                <tr>
+                    <td style="font-family:monospace;font-size:0.8rem;">{{ order.out_trade_no }}</td>
+                    <td>{{ order.email }}</td>
+                    <td>{{ order.amount }} IDC</td>
+                    <td>
+                        {% if order.status == 'paid' %}
+                        <span class="status-badge" style="background:rgba(34,197,94,0.1);color:#16a34a;">已支付</span>
+                        {% elif order.status == 'pending' %}
+                        <span class="status-badge" style="background:rgba(245,158,11,0.1);color:#b45309;">待支付</span>
+                        {% else %}
+                        <span class="status-badge" style="background:rgba(239,68,68,0.1);color:#dc2626;">{{ order.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ order.created_at[:19] if order.created_at else '-' }}</td>
+                    <td>{{ order.paid_at[:19] if order.paid_at else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- 候车用户列表 -->
+<div class="content-section">
+    <div class="section-header">
+        <h3>候车用户列表</h3>
+    </div>
+
+    {% if waiting_list %}
+    <div class="table-container">
+        <table class="data-table" id="waitingTable" style="font-size:0.85rem;">
+            <thead>
+                <tr>
+                    <th>邮箱</th>
+                    <th>加入时间</th>
+                    <th>优先</th>
+                    <th>IDC 订单</th>
+                    <th>状态</th>
+                    <th style="text-align:right;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in waiting_list %}
+                <tr class="waiting-row">
+                    <td>{{ entry.email }}</td>
+                    <td>{{ entry.created_at[:19] if entry.created_at else '-' }}</td>
+                    <td>
+                        {% if entry.is_priority %}
+                        <span class="status-badge" style="background:rgba(99,102,241,0.1);color:#4f46e5;">⚡ 优先</span>
+                        {% else %}
+                        <span style="color:#999;">-</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-family:monospace;font-size:0.78rem;">{{ entry.idc_order_no or '-' }}</td>
+                    <td>
+                        {% if entry.notified %}
+                        <span class="status-badge" style="background:rgba(34,197,94,0.1);color:#16a34a;">已通知</span>
+                        {% else %}
+                        <span class="status-badge" style="background:rgba(245,158,11,0.1);color:#b45309;">等待中</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right;">
+                        {% if not entry.notified %}
+                        <button class="btn btn-sm btn-secondary" onclick="deleteWaitingEntry({{ entry.id }})">删除</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- 分页控件 -->
+    <div id="waitingPagination" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:1rem 0;flex-wrap:wrap;"></div>
+    {% else %}
+    <p style="color:#999;padding:1rem 0;">候车室暂无用户</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 通知所有候车用户
+    async function notifyAllWaiting() {
+        if (!confirm('确定要通知所有候车用户吗？')) return;
+
+        const btn = document.getElementById('notifyAllBtn');
+        btn.disabled = true;
+        btn.textContent = '发送中...';
+
+        try {
+            const response = await fetch('/admin/waiting-room/notify-all', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                showToast(data.message || '通知已发送', 'success');
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                showToast(data.error || '通知失败', 'error');
+            }
+        } catch (error) {
+            showToast('网络错误', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '📧 通知所有候车用户';
+        }
+    }
+
+    // 仅通知优先用户
+    async function notifyPriorityWaiting() {
+        if (!confirm('确定要通知所有优先用户吗？')) return;
+
+        const btn = document.getElementById('notifyPriorityBtn');
+        btn.disabled = true;
+        btn.textContent = '发送中...';
+
+        try {
+            const response = await fetch('/admin/waiting-room/notify-priority', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                showToast(data.message || '通知已发送', 'success');
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                showToast(data.error || '通知失败', 'error');
+            }
+        } catch (error) {
+            showToast('网络错误', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '⚡ 仅通知优先用户';
+        }
+    }
+
+    // 清除已通知记录
+    async function clearNotifiedWaiting() {
+        if (!confirm('确定要清除所有已通知的候车记录吗？')) return;
+
+        try {
+            const response = await fetch('/admin/waiting-room/clear', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                showToast(data.message || '已清除', 'success');
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showToast(data.error || '清除失败', 'error');
+            }
+        } catch (error) {
+            showToast('网络错误', 'error');
+        }
+    }
+
+    // 批量发送专属邀请
+    async function sendExclusiveInvite(prefillEmail) {
+        const teamSelect = document.getElementById('exclusiveTeamId');
+        const emailArea = document.getElementById('exclusiveEmails');
+        const resultDiv = document.getElementById('exclusiveResult');
+
+        if (!teamSelect || !emailArea) return;
+
+        if (prefillEmail) {
+            emailArea.value = prefillEmail;
+        }
+
+        const team_id = parseInt(teamSelect.value);
+        const raw = emailArea.value.trim();
+
+        if (!raw) {
+            showToast('请输入用户邮箱', 'error');
+            return;
+        }
+
+        // 支持换行、逗号、分号分隔
+        const emails = raw.split(/[\n,;、]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s; });
+        if (!emails.length) {
+            showToast('请输入至少一个邮箱', 'error');
+            return;
+        }
+
+        if (!confirm('确定向 ' + emails.length + ' 个邮箱发送专属链接？')) return;
+
+        const btn = document.getElementById('sendExclusiveBtn');
+        btn.disabled = true;
+        btn.textContent = '发送中 (' + emails.length + ' 个)...';
+
+        try {
+            const response = await fetch('/admin/exclusive-invite/send-batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ team_id: team_id, emails: emails })
+            });
+            var data = null;
+            try { data = await response.json(); } catch(x) {}
+            if (response.ok && data && data.success) {
+                showToast(data.message || '专属链接已发送', 'success');
+                resultDiv.style.display = '';
+                var html = '<div style="padding:0.75rem 1rem;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2);border-radius:8px;font-size:0.85rem;">';
+                html += '<div style="color:#6d28d9;font-weight:600;margin-bottom:0.5rem;">\u2705 ' + (data.message || '') + '</div>';
+                html += '<div style="max-height:200px;overflow-y:auto;">';
+                for (var i = 0; i < data.results.length; i++) {
+                    var r = data.results[i];
+                    var statusIcon = r.email_sent ? '\u2709\ufe0f' : '\u26a0\ufe0f';
+                    html += '<div style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid rgba(0,0,0,0.05);flex-wrap:wrap;">';
+                    html += '<span>' + statusIcon + '</span>';
+                    html += '<span style="min-width:160px;font-size:0.82rem;">' + r.email + '</span>';
+                    html += '<code style="flex:1;word-break:break-all;font-size:0.75rem;color:#555;">' + r.invite_url + '</code>';
+                    html += '<button class="btn btn-sm btn-secondary" style="padding:2px 8px;font-size:0.75rem;" data-url="' + r.invite_url + '" onclick="navigator.clipboard.writeText(this.dataset.url).then(function(){showToast(\'已复制\',\'success\')})">复制</button>';
+                    html += '</div>';
+                }
+                html += '</div></div>';
+                resultDiv.innerHTML = html;
+            } else {
+                showToast((data && data.error) || ('发送失败 [' + response.status + ']'), 'error');
+            }
+        } catch (error) {
+            showToast('网络错误: ' + error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '\ud83d\udd17 批量发送专属链接';
+        }
+    }
+
+    // 一键发送给所有优先用户
+    async function sendToPriorityUsers() {
+        const teamSelect = document.getElementById('exclusiveTeamId');
+        if (!teamSelect) return;
+
+        const team_id = parseInt(teamSelect.value);
+        if (!confirm('确定向所有优先用户发送专属上车链接？')) return;
+
+        const btn = document.getElementById('sendPriorityBtn');
+        const resultDiv = document.getElementById('exclusiveResult');
+        btn.disabled = true;
+        btn.textContent = '发送中...';
+
+        try {
+            const response = await fetch('/admin/exclusive-invite/send-priority', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ team_id: team_id })
+            });
+            var data = null;
+            try { data = await response.json(); } catch(x) {}
+            if (response.ok && data && data.success) {
+                showToast(data.message || '已发送', 'success');
+                resultDiv.style.display = '';
+                var html = '<div style="padding:0.75rem 1rem;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;font-size:0.85rem;">';
+                html += '<div style="color:#b45309;font-weight:600;margin-bottom:0.5rem;">\u2705 ' + (data.message || '') + '</div>';
+                html += '<div style="max-height:200px;overflow-y:auto;">';
+                for (var i = 0; i < data.results.length; i++) {
+                    var r = data.results[i];
+                    var statusIcon = r.email_sent ? '\u2709\ufe0f' : '\u26a0\ufe0f';
+                    html += '<div style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid rgba(0,0,0,0.05);flex-wrap:wrap;">';
+                    html += '<span>' + statusIcon + '</span>';
+                    html += '<span style="min-width:160px;font-size:0.82rem;">' + r.email + '</span>';
+                    html += '<code style="flex:1;word-break:break-all;font-size:0.75rem;color:#555;">' + r.invite_url + '</code>';
+                    html += '<button class="btn btn-sm btn-secondary" style="padding:2px 8px;font-size:0.75rem;" data-url="' + r.invite_url + '" onclick="navigator.clipboard.writeText(this.dataset.url).then(function(){showToast(\'已复制\',\'success\')})">复制</button>';
+                    html += '</div>';
+                }
+                html += '</div></div>';
+                resultDiv.innerHTML = html;
+            } else {
+                showToast((data && data.error) || ('发送失败 [' + response.status + ']'), 'error');
+            }
+        } catch (error) {
+            showToast('网络错误: ' + error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '\u26a1 一键发送给所有优先用户 ({{ priority_count }})';
+        }
+    }
+
+    // 删除单个候车记录
+    async function deleteWaitingEntry(id) {
+        if (!confirm('确定要删除此候车记录吗？')) return;
+
+        try {
+            const response = await fetch('/admin/waiting-room/delete/' + id, {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                showToast('已删除', 'success');
+                setTimeout(() => location.reload(), 600);
+            } else {
+                showToast(data.error || '删除失败', 'error');
+            }
+        } catch (error) {
+            showToast('网络错误', 'error');
+        }
+    }
+
+    // 分页逻辑
+    (function() {
+        const PAGE_SIZE = 10;
+        const rows = document.querySelectorAll('#waitingTable .waiting-row');
+        if (!rows.length) return;
+
+        const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+        let currentPage = 1;
+
+        function renderPage(page) {
+            currentPage = page;
+            rows.forEach((row, i) => {
+                row.style.display = (i >= (page - 1) * PAGE_SIZE && i < page * PAGE_SIZE) ? '' : 'none';
+            });
+
+            const pag = document.getElementById('waitingPagination');
+            if (!pag || totalPages <= 1) return;
+
+            let html = '<span style="font-size:0.82rem;color:#888;">共 ' + rows.length + ' 条，第 ' + page + '/' + totalPages + ' 页</span>';
+            html += '<div style="display:flex;gap:4px;align-items:center;">';
+
+            // 上一页
+            html += '<button class="btn btn-sm btn-outline" ' + (page <= 1 ? 'disabled' : '') +
+                ' onclick="window.__waitingGoPage(' + (page - 1) + ')" style="min-width:auto;padding:4px 10px;">&laquo;</button>';
+
+            // 页码按钮（最多显示 5 个）
+            var startPage = Math.max(1, page - 2);
+            var endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+            for (var p = startPage; p <= endPage; p++) {
+                if (p === page) {
+                    html += '<button class="btn btn-sm btn-primary" style="min-width:auto;padding:4px 10px;" disabled>' + p + '</button>';
+                } else {
+                    html += '<button class="btn btn-sm btn-outline" style="min-width:auto;padding:4px 10px;" onclick="window.__waitingGoPage(' + p + ')">' + p + '</button>';
+                }
+            }
+
+            // 下一页
+            html += '<button class="btn btn-sm btn-outline" ' + (page >= totalPages ? 'disabled' : '') +
+                ' onclick="window.__waitingGoPage(' + (page + 1) + ')" style="min-width:auto;padding:4px 10px;">&raquo;</button>';
+
+            html += '</div>';
+            pag.innerHTML = html;
+        }
+
+        window.__waitingGoPage = renderPage;
+        renderPage(1);
+    })();
+</script>
+{% endblock %}

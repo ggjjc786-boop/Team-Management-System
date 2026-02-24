@@ -1,0 +1,396 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT Team 兑换 · 新春特别版</title>
+    <link rel="stylesheet" href="/static/css/user.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .hero-login {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .hero-login-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            background: linear-gradient(120deg, #111827, #1f2937);
+            color: #f8fafc;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hero-login-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12);
+        }
+
+        .hero-login-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #d97706, #b91c1c);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #fff7eb;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+            letter-spacing: -0.02em;
+        }
+
+        .hero-login-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .hero-login-title {
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .hero-login-sub {
+            font-size: 0.82rem;
+            color: #cbd5e1;
+        }
+
+        .hero-login-meta {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+            justify-content: center;
+        }
+
+        .hero-chip {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(250, 204, 21, 0.12);
+            color: #facc15;
+            font-weight: 700;
+            border: 1px solid rgba(250, 204, 21, 0.35);
+        }
+    </style>
+</head>
+
+<body>
+    {% if festive_enabled %}
+    <!-- 飘落梅花/樱花粒子 -->
+    <div class="falling-blossoms" aria-hidden="true" id="fallingBlossoms"></div>
+    <!-- 金色祥云 -->
+    <div class="golden-clouds" aria-hidden="true">
+        <div class="g-cloud g-cloud-1">☁</div>
+        <div class="g-cloud g-cloud-2">☁</div>
+        <div class="g-cloud g-cloud-3">☁</div>
+    </div>
+    <div class="festival-frame" aria-hidden="true"></div>
+    <div class="page-lanterns" aria-hidden="true">
+        <div class="lantern lantern-left">
+            <span class="lantern-cap lantern-cap-top"></span>
+            <span class="lantern-body"></span>
+            <span class="lantern-word"><span>新</span><span>春</span></span>
+            <span class="lantern-cap lantern-cap-bottom"></span>
+            <span class="lantern-tassel"></span>
+        </div>
+        <div class="lantern lantern-right">
+            <span class="lantern-cap lantern-cap-top"></span>
+            <span class="lantern-body"></span>
+            <span class="lantern-word"><span>快</span><span>乐</span></span>
+            <span class="lantern-cap lantern-cap-bottom"></span>
+            <span class="lantern-tassel"></span>
+        </div>
+    </div>
+    <div class="festival-couplets" aria-hidden="true">
+        <div class="couplet-wrapper couplet-left">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">天增岁月人增寿</div>
+                <div class="couplet couplet-back">爆竹声中辞旧岁</div>
+            </div>
+        </div>
+        <div class="couplet-wrapper couplet-right">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">春满乾坤福满门</div>
+                <div class="couplet couplet-back">梅花香里报新春</div>
+            </div>
+        </div>
+        <div class="crossbeam-wrapper">
+            <div class="crossbeam-inner">
+                <div class="couplet-crossbeam crossbeam-front">恭贺新春</div>
+                <div class="couplet-crossbeam crossbeam-back">万象更新</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container">
+        <div class="header">
+            {% if festive_enabled %}
+            <div class="header-fu" aria-hidden="true">福</div>
+            {% endif %}
+            <h1>GPT Team 兑换</h1>
+            <p class="subtitle">{% if festive_enabled %}新春喜迎 · {% endif %}使用兑换码加入 ChatGPT Team</p>
+            <div class="hero-login">
+                {% if user_data %}
+                <a class="hero-login-cta" href="/user/points">
+                    <div class="hero-login-logo">LD</div>
+                    <div class="hero-login-text">
+                        <div class="hero-login-title">进入用户中心</div>
+                        <div class="hero-login-sub">查看积分 / 免费车位</div>
+                    </div>
+                </a>
+                {% else %}
+                <a class="hero-login-cta" href="/user/auth/login">
+                    <div class="hero-login-logo">LD</div>
+                    <div class="hero-login-text">
+                        <div class="hero-login-title">使用 LinuxDo 登录</div>
+                        <div class="hero-login-sub">签到积分 · 积分商城 · 免费车位</div>
+                    </div>
+                </a>
+                {% endif %}
+            </div>
+            {% if user_data %}
+            <div class="hero-login-meta">
+                <a href="/user/freespot" class="hero-chip" style="text-decoration:none;">免费车位</a>
+                <a href="/user/shop" class="hero-chip" style="text-decoration:none;">积分商城</a>
+            </div>
+            {% endif %}
+            {% if festive_enabled %}
+            <div class="newyear-chip">🐴 马年大吉</div>
+            {% endif %}
+            {% if remaining_spots is not none %}
+            <div class="spots-badge">
+                <i data-lucide="users"></i> 剩余车位: {{ remaining_spots }}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 公告栏 -->
+        {% if announcement %}
+        <div class="announcement-bar" id="announcementBar">
+            <div class="announcement-icon">📢</div>
+            <div class="announcement-content">
+                <div class="announcement-text">{{ announcement }}</div>
+            </div>
+            <button class="announcement-close" onclick="document.getElementById('announcementBar').style.display='none'"
+                title="关闭">&times;</button>
+        </div>
+        {% endif %}
+
+        <!-- 功能切换标签 -->
+        <div class="tab-switcher">
+            <span class="tab-slider" id="tabSlider"></span>
+            <button class="tab-btn active" onclick="switchTab('redeem')" id="tab-redeem">
+                <i data-lucide="gift"></i> 兑换码兑换
+            </button>
+            <button class="tab-btn" onclick="switchTab('warranty')" id="tab-warranty">
+                <i data-lucide="shield-check"></i> 质保查询
+            </button>
+        </div>
+
+        <!-- 步骤1: 输入兑换信息 -->
+        <div id="step1" class="step active">
+            <div class="card redeem-card">
+                <div class="card-header-strip">
+                    <div class="card-header-icon"><i data-lucide="gift"></i></div>
+                    <div>
+                        <h2>输入兑换信息</h2>
+                        <p class="card-header-sub">填写邮箱和兑换码，即可加入 ChatGPT Team</p>
+                    </div>
+                </div>
+                <form id="verifyForm">
+                    <div class="form-group">
+                        <label for="email"><i data-lucide="mail"
+                                style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i>邮箱地址</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="email" name="email" required placeholder="请输入您的邮箱地址"
+                                class="form-input">
+                        </div>
+                        <p class="form-help">邀请将发送到此邮箱，请确保可正常接收</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="code"><i data-lucide="key-round"
+                                style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i>兑换码</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="code" name="code" required placeholder="请输入兑换码" class="form-input">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="verifyBtn">
+                        <i data-lucide="arrow-right-circle"></i> 验证并兑换
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 步骤2: 选择 Team (已废弃，保留占位防止 JS 报错) -->
+        <div id="step2" class="step" style="display: none;">
+            <div class="card">
+                <h2>选择 Team</h2>
+                <div id="teamsList" class="teams-list"></div>
+                <div class="actions">
+                    <button onclick="backToStep1()" class="btn btn-secondary">返回</button>
+                    <button onclick="autoSelectTeam()" class="btn btn-primary">自动选择</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤3: 兑换结果 -->
+        <div id="step3" class="step">
+            <div class="card">
+                <div id="resultContent">
+                    <!-- 结果内容将通过 JavaScript 动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 质保查询面板 -->
+        <div id="warrantyPanel" class="step" style="display: none;">
+            <div class="card warranty-card">
+                <div class="card-header-strip">
+                    <div class="card-header-icon warranty-icon"><i data-lucide="shield-check"></i></div>
+                    <div>
+                        <h2>质保查询</h2>
+                        <p class="card-header-sub">封号后可凭原兑换码重新加入 Team</p>
+                    </div>
+                </div>
+                <div class="warranty-tip">
+                    <div class="warranty-tip-icon">🛡️</div>
+                    <div class="warranty-tip-text">
+                        如果您使用<strong>质保兑换码</strong>加入的 Team 被封号，可以在质保期内重复使用原兑换码重新加入。
+                    </div>
+                </div>
+                <form id="warrantyForm">
+                    <div class="form-group">
+                        <label for="warrantyCode"><i data-lucide="key-round"
+                                style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i>兑换码</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="warrantyCode" name="warrantyCode" required placeholder="请输入您的兑换码"
+                                class="form-input">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="warrantyQueryBtn">
+                        <i data-lucide="search"></i> 查询质保状态
+                    </button>
+                </form>
+                <div id="warrantyResult" style="margin-top: 1.5rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/js/redeem.js"></script>
+    <script>
+        if (window.lucide) lucide.createIcons();
+        {% if festive_enabled %}
+        // 生成物理飘落梅花
+        if (typeof startPhysicsBlossoms === 'function') {
+            startPhysicsBlossoms();
+        }
+
+        // 对联翻转轮播
+        (function () {
+            var coupletSets = [
+                { left: '天增岁月人增寿', right: '春满乾坤福满门', cross: '恭贺新春' },
+                { left: '爆竹声中辞旧岁', right: '梅花香里报新春', cross: '万象更新' },
+                { left: '春回大地千山秀', right: '日暖神州万物荣', cross: '春意盎然' },
+                { left: '和顺一门有百福', right: '平安二字值千金', cross: '万事如意' },
+                { left: '一年四季春常在', right: '万紫千红永开花', cross: '喜迎新春' },
+                { left: '春风化雨山河美', right: '政策归心城乡欢', cross: '国泰民安' },
+                { left: '一帆风顺年年好', right: '万事如意步步高', cross: '吉星高照' },
+                { left: '百世岁月当代好', right: '千古江山今朝新', cross: '万象更新' },
+                { left: '喜居宝地千年旺', right: '福照家门万事兴', cross: '喜迎新春' },
+                { left: '一年四季行好运', right: '八方财宝进家门', cross: '家和业兴' },
+                { left: '绿竹别其三分景', right: '红梅正报万家春', cross: '春回大地' },
+                { left: '年年顺景则源广', right: '岁岁平安福寿多', cross: '吉祥如意' },
+                { left: '五更分两年年年称心', right: '一夜连两岁岁岁如意', cross: '恭贺新禧' },
+                { left: '大地流金万事通', right: '冬去春来万象新', cross: '欢度春节' },
+                { left: '日出江花红胜火', right: '春来江水绿如蓝', cross: '鸟语花香' },
+                { left: '风和日丽春常驻', right: '人寿年丰福永存', cross: '福星高照' },
+                { left: '春风入喜财入户', right: '岁月更新福满门', cross: '新春大吉' },
+                { left: '事事如意大吉祥', right: '家家顺心永安康', cross: '四季兴隆' },
+                { left: '迎新春江山锦绣', right: '辞旧岁事泰辉煌', cross: '春意盎然' },
+                { left: '旧岁又添几个喜', right: '新年更上一层楼', cross: '辞旧迎新' },
+                { left: '东风化雨山山翠', right: '政策归心处处春', cross: '春风化雨' },
+                { left: '家过小康欢乐日', right: '春回大地艳阳天', cross: '人寿年丰' },
+                { left: '多劳多得人人乐', right: '丰产丰收岁岁甜', cross: '国强民富' },
+                { left: '壮丽山河多异彩', right: '文明国度遍高风', cross: '山河壮丽' },
+                { left: '财连亨通步步高', right: '日子红火腾腾起', cross: '迎春接福' },
+                { left: '福旺财旺运气旺', right: '家兴人兴事业兴', cross: '万事亨通' },
+                { left: '大地歌唤彩云追月', right: '银河曲唱锦绣山河', cross: '锦绣前程' },
+                { left: '一门瑞气御风飞翔', right: '满院祥光逐日腾辉', cross: '祥光普照' },
+                { left: '东风送暖文明第宅', right: '喜气临门和睦人家', cross: '阖家欢乐' },
+                { left: '岁通盛世家家富', right: '人遇年华个个欢', cross: '皆大欢喜' },
+                { left: '丹凤呈祥龙献瑞', right: '红桃贺岁杏迎春', cross: '福满人间' },
+                { left: '五湖四海皆春色', right: '万水千山尽得辉', cross: '万象更新' },
+                { left: '雪里江山美如画', right: '花间岁月甜似蜜', cross: '美满幸福' },
+                { left: '花开富贵家家乐', right: '灯照吉祥岁岁欢', cross: '花好月圆' },
+                { left: '迎喜迎春迎富贵', right: '接财接福接平安', cross: '喜气盈门' },
+                { left: '创大业千秋昌盛', right: '展宏图再就辉煌', cross: '大展鸿图' },
+                { left: '一年好运随春到', right: '四季彩云滚滚来', cross: '万事胜意' },
+                { left: '丹凤呈祥龙献瑞', right: '紫气东来福满堂', cross: '龙凤呈祥' },
+                { left: '庆佳节合家团聚', right: '迎新春满院生辉', cross: '合家欢乐' },
+                { left: '春临大地百花艳', right: '节至人间万象新', cross: '春满人间' },
+                { left: '万里春风催桃李', right: '一腔热血育新人', cross: '春风化雨' },
+                { left: '黄莺鸣翠柳飞舞', right: '紫燕剪春风送暖', cross: '莺歌燕舞' },
+                { left: '好时代好风光好运', right: '新社会新气象新春', cross: '日新月异' },
+                { left: '处处春光好年年入画', right: '家家喜气浓岁岁平安', cross: '四海同春' },
+                { left: '财源滚滚随春到', right: '喜气洋洋伴福来', cross: '财源广进' },
+                { left: '红梅含苞傲冬雪', right: '绿柳吐絮迎新春', cross: '欢度春节' },
+                { left: '百花齐放春光好', right: '万马奔腾气象新', cross: '马到成功' },
+                { left: '日日财源顺意来', right: '年年福禄随春到', cross: '新春快乐' },
+                { left: '瑞气盈门幸福家', right: '祥光普照如意年', cross: '瑞雪丰年' },
+                { left: '张灯结彩迎新春', right: '欢天喜地度佳节', cross: '普天同庆' }
+            ];
+            var idx = 0;
+            var leftWrap = document.querySelector('.couplet-wrapper.couplet-left');
+            var rightWrap = document.querySelector('.couplet-wrapper.couplet-right');
+            var crossWrap = document.querySelector('.crossbeam-wrapper');
+            if (!leftWrap || !rightWrap || !crossWrap) return;
+
+            var leftFront = leftWrap.querySelector('.couplet-front');
+            var leftBack = leftWrap.querySelector('.couplet-back');
+            var rightFront = rightWrap.querySelector('.couplet-front');
+            var rightBack = rightWrap.querySelector('.couplet-back');
+            var crossFront = crossWrap.querySelector('.crossbeam-front');
+            var crossBack = crossWrap.querySelector('.crossbeam-back');
+
+            setInterval(function () {
+                var nextIdx = (idx + 1) % coupletSets.length;
+                var nextSet = coupletSets[nextIdx];
+                var isFlipped = leftWrap.classList.contains('flipped');
+
+                if (isFlipped) {
+                    leftFront.textContent = nextSet.left;
+                    rightFront.textContent = nextSet.right;
+                    crossFront.textContent = nextSet.cross;
+                } else {
+                    leftBack.textContent = nextSet.left;
+                    rightBack.textContent = nextSet.right;
+                    crossBack.textContent = nextSet.cross;
+                }
+
+                leftWrap.classList.toggle('flipped');
+                rightWrap.classList.toggle('flipped');
+                crossWrap.classList.toggle('flipped');
+                idx = nextIdx;
+            }, 5000);
+        })();
+        {% endif %}
+    </script>
+</body>
+
+</html>

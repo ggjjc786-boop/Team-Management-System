@@ -1,0 +1,228 @@
+﻿{% extends "base.html" %}
+
+{% block title %}鍏戞崲鐮佺鐞?- GPT Team 绠＄悊绯荤粺{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>鍏戞崲鐮佺鐞?/h2>
+</div>
+
+<!-- 缁熻鍗＄墖 -->
+<div class="stats-container">
+    <div class="stat-card">
+        <div class="stat-icon">馃帿</div>
+        <div class="stat-content">
+            <div class="stat-value">{{ stats.total }}</div>
+            <div class="stat-label">鍏戞崲鐮佹€绘暟</div>
+        </div>
+    </div>
+    <div class="stat-card stat-success">
+        <div class="stat-icon">鉁?/div>
+        <div class="stat-content">
+            <div class="stat-value">{{ stats.unused }}</div>
+            <div class="stat-label">鏈娇鐢?/div>
+        </div>
+    </div>
+    <div class="stat-card stat-info">
+        <div class="stat-icon">馃摑</div>
+        <div class="stat-content">
+            <div class="stat-value">{{ stats.used }}</div>
+            <div class="stat-label">宸蹭娇鐢?/div>
+        </div>
+    </div>
+    <div class="stat-card stat-danger">
+        <div class="stat-icon">鈴?/div>
+        <div class="stat-content">
+            <div class="stat-value">{{ stats.expired }}</div>
+            <div class="stat-label">宸茶繃鏈?/div>
+        </div>
+    </div>
+</div>
+
+<!-- 鎿嶄綔鏍?-->
+<div class="section-header">
+    <div class="filter-buttons">
+        <button onclick="filterByStatus('all')" class="btn btn-sm btn-secondary active" id="filter-all">鍏ㄩ儴</button>
+        <button onclick="filterByStatus('unused')" class="btn btn-sm btn-success" id="filter-unused">鏈娇鐢?/button>
+        <button onclick="filterByStatus('used')" class="btn btn-sm btn-info" id="filter-used">宸蹭娇鐢?/button>
+        <button onclick="filterByStatus('expired')" class="btn btn-sm btn-danger" id="filter-expired">宸茶繃鏈?/button>
+    </div>
+    <div class="action-buttons">
+        <button onclick="showModal('generateCodeModal')" class="btn btn-primary">鐢熸垚鍏戞崲鐮?/button>
+        <button onclick="generateTestCode()" class="btn btn-secondary">生成测试兑换码</button>
+        <button onclick="exportCodes()" class="btn btn-secondary">瀵煎嚭鍏戞崲鐮?/button>
+    </div>
+</div>
+
+<!-- 鍏戞崲鐮佸垪琛?-->
+<div class="content-section">
+    {% if codes %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>鍏戞崲鐮?/th>
+                    <th>鐘舵€?/th>
+                    <th>鍒涘缓鏃堕棿</th>
+                    <th>杩囨湡鏃堕棿</th>
+                    <th>浣跨敤鑰呴偖绠?/th>
+                    <th>浣跨敤鏃堕棿</th>
+                    <th style="text-align: right;">鎿嶄綔</th>
+                </tr>
+            </thead>
+            <tbody id="codesTableBody">
+                {% for code in codes %}
+                <tr data-status="{{ code.status }}">
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="ticket" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+                            <code>{{ code.code }}</code>
+                        </div>
+                    </td>
+                    <td>
+                        {% if code.status == 'unused' %}
+                        <span class="status-badge status-active">鏈娇鐢?/span>
+                        {% elif code.status == 'used' %}
+                        <span class="status-badge status-full">宸蹭娇鐢?/span>
+                        {% elif code.status == 'expired' %}
+                        <span class="status-badge status-error">宸茶繃鏈?/span>
+                        {% endif %}
+                    </td>
+                    <td>{{ code.created_at }}</td>
+                    <td>{{ code.expires_at if code.expires_at else '姘镐箙鏈夋晥' }}</td>
+                    <td>{{ code.used_by_email if code.used_by_email else '-' }}</td>
+                    <td>{{ code.used_at if code.used_at else '-' }}</td>
+                    <td style="text-align: right;">
+                        <div class="action-buttons" style="justify-content: flex-end;">
+                            <button onclick="copyCode('{{ code.code }}')" class="btn btn-sm btn-secondary" title="澶嶅埗">
+                                <i data-lucide="copy"></i>
+                            </button>
+                            {% if code.status == 'unused' %}
+                            <button onclick="deleteCode('{{ code.code }}')" class="btn btn-sm btn-danger" title="鍒犻櫎">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i data-lucide="package-open" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.2;"></i>
+        <p>鏆傛棤鍏戞崲鐮佹暟鎹?/p>
+        <button onclick="showModal('generateCodeModal')" class="btn btn-primary">绔嬪嵆鐢熸垚</button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 褰撳墠绛涢€夌姸鎬?    let currentFilter = 'all';
+
+    // 鎸夌姸鎬佺瓫閫?    function filterByStatus(status) {
+        currentFilter = status;
+
+        // 鏇存柊鎸夐挳鐘舵€?        document.querySelectorAll('.filter-buttons .btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(`filter-${status}`).classList.add('active');
+
+        // 绛涢€夎〃鏍艰
+        const rows = document.querySelectorAll('#codesTableBody tr');
+        rows.forEach(row => {
+            const rowStatus = row.getAttribute('data-status');
+            if (status === 'all' || rowStatus === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // 生成测试兑换码
+    async function generateTestCode() {
+        try {
+            const response = await fetch('/admin/codes/generate-test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+            if (response.ok && result.success) {
+                if (result.code) {
+                    await copyToClipboard(result.code);
+                }
+                showToast('测试兑换码已生成（仅用于动画测试）', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1200);
+            } else {
+                showToast(result.error || '生成测试兑换码失败', 'error');
+            }
+        } catch (error) {
+            showToast('网络错误', 'error');
+        }
+    }
+    async function deleteCode(code) {
+        if (!confirm(`纭畾瑕佸垹闄ゅ厬鎹㈢爜 ${code} 鍚?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/codes/${encodeURIComponent(code)}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                showToast('鍒犻櫎鎴愬姛', 'success');
+                // 鍒锋柊椤甸潰
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast(result.error || '鍒犻櫎澶辫触', 'error');
+            }
+        } catch (error) {
+            showToast('缃戠粶閿欒', 'error');
+        }
+    }
+
+
+    // 瀵煎嚭鍏戞崲鐮?    async function exportCodes() {
+        try {
+            const response = await fetch('/admin/codes/export');
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `redemption_codes_${new Date().getTime()}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('瀵煎嚭鎴愬姛', 'success');
+            } else {
+                showToast('瀵煎嚭澶辫触', 'error');
+            }
+        } catch (error) {
+            showToast('缃戠粶閿欒', 'error');
+        }
+    }
+</script>
+{% endblock %}
+
+
+

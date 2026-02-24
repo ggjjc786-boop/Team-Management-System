@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专属车位 · GPT Team</title>
+    <link rel="stylesheet" href="/static/css/user.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/static/js/i18n.js"></script>
+</head>
+<body>
+    <!-- 飘落梅花/樱花粒子 -->
+    <div class="falling-blossoms" aria-hidden="true" id="fallingBlossoms"></div>
+    <!-- 金色祥云 -->
+    <div class="golden-clouds" aria-hidden="true">
+        <div class="g-cloud g-cloud-1">☁</div>
+        <div class="g-cloud g-cloud-2">☁</div>
+        <div class="g-cloud g-cloud-3">☁</div>
+    </div>
+    <div class="festival-frame" aria-hidden="true"></div>
+
+    <div class="festival-couplets" aria-hidden="true">
+        <div class="couplet-wrapper couplet-left">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">天增岁月人增寿</div>
+                <div class="couplet couplet-back">爆竹声中辞旧岁</div>
+            </div>
+        </div>
+        <div class="couplet-wrapper couplet-right">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">春满乾坤福满门</div>
+                <div class="couplet couplet-back">梅花香里报新春</div>
+            </div>
+        </div>
+        <div class="crossbeam-wrapper">
+            <div class="crossbeam-inner">
+                <div class="couplet-crossbeam crossbeam-front">恭贺新春</div>
+                <div class="couplet-crossbeam crossbeam-back">万象更新</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 窗花装饰 -->
+    <div class="paper-cuts" aria-hidden="true">
+        <div class="paper-cut paper-cut-tl">✿</div>
+        <div class="paper-cut paper-cut-tr">✿</div>
+        <div class="paper-cut paper-cut-bl">✿</div>
+        <div class="paper-cut paper-cut-br">✿</div>
+    </div>
+
+    <!-- 灯笼 -->
+    <div class="page-lanterns" aria-hidden="true">
+        <div class="lantern lantern-left">
+            <div class="lantern-line"></div>
+            <div class="lantern-ring lantern-ring-top"></div>
+            <div class="lantern-body">
+                <div class="lantern-glow"></div>
+                <span class="lantern-word">专属</span>
+            </div>
+            <div class="lantern-ring lantern-ring-bottom"></div>
+            <div class="lantern-tassel">
+                <div class="tassel-knot"></div>
+                <div class="tassel-fringe"></div>
+            </div>
+        </div>
+        <div class="lantern lantern-right">
+            <div class="lantern-line"></div>
+            <div class="lantern-ring lantern-ring-top"></div>
+            <div class="lantern-body">
+                <div class="lantern-glow"></div>
+                <span class="lantern-word">上车</span>
+            </div>
+            <div class="lantern-ring lantern-ring-bottom"></div>
+            <div class="lantern-tassel">
+                <div class="tassel-knot"></div>
+                <div class="tassel-fringe"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-fu" aria-hidden="true">福</div>
+            <h1><i data-lucide="lock" style="width:32px;height:32px;vertical-align:-4px;margin-right:4px;"></i> 打赏用户专属车位</h1>
+            <p class="subtitle">⭐ 感谢您的支持 · 专属通道上车 ⭐</p>
+            <div class="newyear-chip">🐴 马年大吉</div>
+        </div>
+
+        <!-- 返回兑换页 -->
+        <div style="margin-bottom: 1rem;">
+            <a href="/" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+                <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> 返回兑换页
+            </a>
+        </div>
+
+        {% if error_msg %}
+        <!-- 错误状态 -->
+        <div class="card" style="border-color:rgba(239,68,68,0.3);">
+            <div style="text-align:center;padding:2rem;">
+                <div style="font-size:3rem;margin-bottom:1rem;">❌</div>
+                <h2 style="color:#dc2626;margin-bottom:0.5rem;">无法上车</h2>
+                <p style="color:#666;font-size:1rem;">{{ error_msg }}</p>
+                <div style="margin-top:1.5rem;">
+                    <a href="/" class="btn btn-primary" style="text-decoration:none;">返回首页</a>
+                </div>
+            </div>
+        </div>
+        {% elif invite_data %}
+        <!-- 专属上车表单 -->
+        <div class="card" style="border-color:rgba(139,92,246,0.3);">
+            <div class="card-header-strip">
+                <div class="card-header-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);"><i data-lucide="star"></i></div>
+                <div>
+                    <h2>专属车位确认</h2>
+                    <p class="card-header-sub">请确认信息后点击上车</p>
+                </div>
+            </div>
+
+            <div style="background:rgba(139,92,246,0.04);border:1px solid rgba(139,92,246,0.15);border-radius:10px;padding:1.2rem;margin-bottom:1.5rem;">
+                <div style="display:grid;gap:0.6rem;font-size:0.92rem;">
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#888;">Team 名称</span>
+                        <span style="font-weight:600;color:#333;">{{ invite_data.team_name }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#888;">当前成员</span>
+                        <span style="color:#333;">{{ invite_data.current_members }}/{{ invite_data.max_members }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#888;">邀请邮箱</span>
+                        <span style="font-weight:600;color:#8b5cf6;">{{ invite_data.email }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="exclusiveEmail"><i data-lucide="mail" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i>确认邮箱</label>
+                <div class="input-wrapper">
+                    <input type="email" id="exclusiveEmail" required
+                        placeholder="请输入您收到邀请的邮箱"
+                        value="{{ invite_data.email }}"
+                        class="form-input">
+                </div>
+                <p class="form-help">请使用收到邀请邮件的邮箱地址</p>
+            </div>
+
+            <button type="button" id="exclusiveJoinBtn" class="btn btn-primary" onclick="doExclusiveJoin()"
+                style="width:100%;padding:0.85rem;font-size:1rem;background:linear-gradient(135deg,#8b5cf6,#6d28d9);">
+                <i data-lucide="rocket" style="width:18px;height:18px;vertical-align:-3px;margin-right:6px;"></i>
+                立即上车
+            </button>
+
+            <div id="exclusiveResult" style="margin-top:1rem;"></div>
+        </div>
+        {% else %}
+        <!-- 未知状态 -->
+        <div class="card">
+            <div style="text-align:center;padding:2rem;">
+                <p style="color:#999;">缺少邀请信息，请通过邮件中的链接访问此页面。</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/js/celebration.js"></script>
+    <script>
+        if (window.lucide) lucide.createIcons();
+        if (typeof startPhysicsBlossoms === 'function') startPhysicsBlossoms();
+        if (typeof initCoupletRotation === 'function') initCoupletRotation();
+
+        function showToast(msg, type) {
+            var t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.className = 'toast show toast-' + (type || 'info');
+            setTimeout(function() { t.className = 'toast'; }, 3500);
+        }
+
+        async function doExclusiveJoin() {
+            var emailInput = document.getElementById('exclusiveEmail');
+            var btn = document.getElementById('exclusiveJoinBtn');
+            var resultDiv = document.getElementById('exclusiveResult');
+
+            if (!emailInput || !btn) return;
+
+            var email = emailInput.value.trim();
+            if (!email) {
+                showToast('请输入邮箱', 'error');
+                return;
+            }
+
+            // 获取 token from URL
+            var params = new URLSearchParams(window.location.search);
+            var token = params.get('token');
+            if (!token) {
+                showToast('缺少邀请令牌', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="spin" style="width:18px;height:18px;vertical-align:-3px;margin-right:6px;"></i>上车中...';
+            if (window.lucide) lucide.createIcons();
+
+            try {
+                var res = await fetch('/redeem/exclusive-join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token, email: email })
+                });
+
+                if (!res.ok) {
+                    var errData = await res.json().catch(function() { return {}; });
+                    var errMsg = errData.detail || errData.error || '上车失败';
+                    showToast(errMsg, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="rocket" style="width:18px;height:18px;vertical-align:-3px;margin-right:6px;"></i>立即上车';
+                    if (window.lucide) lucide.createIcons();
+                    return;
+                }
+
+                var data = await res.json();
+                showToast(data.message || '上车成功！', 'success');
+
+                if (resultDiv) {
+                    var teamInfo = data.team_info || {};
+                    resultDiv.innerHTML =
+                        '<div style="padding:1.4rem;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.18);border-radius:12px;text-align:center;">' +
+                        '<div style="font-size:2.5rem;margin-bottom:0.5rem;">🎉</div>' +
+                        '<div style="font-weight:600;color:#6d28d9;font-size:1.2rem;margin-bottom:0.5rem;">' + (data.message || '上车成功') + '</div>' +
+                        '<div style="font-size:0.95rem;color:#8b5cf6;margin-bottom:0.5rem;">⭐ 感谢您的打赏支持！⭐</div>' +
+                        (teamInfo.team_name ? '<div style="font-size:0.85rem;color:#666;margin-bottom:0.3rem;">Team: ' + teamInfo.team_name + '</div>' : '') +
+                        '<div style="font-size:0.85rem;color:#666;">请查收邮箱中的 ChatGPT Team 邀请</div>' +
+                        '</div>';
+                }
+
+                // 播放庆祝动画
+                if (typeof playCelebration === 'function') playCelebration(12000);
+                if (typeof playNewYearOverlay === 'function') playNewYearOverlay(8000);
+
+                btn.style.display = 'none';
+
+            } catch (err) {
+                showToast('网络错误，请重试', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="rocket" style="width:18px;height:18px;vertical-align:-3px;margin-right:6px;"></i>立即上车';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+    </script>
+</body>
+</html>

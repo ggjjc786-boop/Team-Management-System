@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>候车室 · GPT Team</title>
+    <link rel="stylesheet" href="/static/css/user.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/static/js/i18n.js"></script>
+</head>
+
+<body>
+    {% if festive_enabled %}
+    <!-- 飘落梅花/樱花粒子 -->
+    <div class="falling-blossoms" aria-hidden="true" id="fallingBlossoms"></div>
+    <!-- 金色祥云 -->
+    <div class="golden-clouds" aria-hidden="true">
+        <div class="g-cloud g-cloud-1">☁</div>
+        <div class="g-cloud g-cloud-2">☁</div>
+        <div class="g-cloud g-cloud-3">☁</div>
+    </div>
+    <div class="festival-frame" aria-hidden="true"></div>
+
+    <div class="festival-couplets" aria-hidden="true">
+        <div class="couplet-wrapper couplet-left">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">天增岁月人增寿</div>
+                <div class="couplet couplet-back">爆竹声中辞旧岁</div>
+            </div>
+        </div>
+        <div class="couplet-wrapper couplet-right">
+            <div class="couplet-inner">
+                <div class="couplet couplet-front">春满乾坤福满门</div>
+                <div class="couplet couplet-back">梅花香里报新春</div>
+            </div>
+        </div>
+        <div class="crossbeam-wrapper">
+            <div class="crossbeam-inner">
+                <div class="couplet-crossbeam crossbeam-front">恭贺新春</div>
+                <div class="couplet-crossbeam crossbeam-back">万象更新</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 窗花装饰已移除 -->
+    {% endif %}
+
+    <div class="container">
+        <div class="header">
+            {% if festive_enabled %}
+            <div class="header-fu" aria-hidden="true">福</div>
+            {% endif %}
+            <h1><i data-lucide="clock" style="width:32px;height:32px;vertical-align:-4px;margin-right:4px;"></i> <span
+                    data-i18n="waiting_page_title">候车室</span></h1>
+            <p class="subtitle" data-i18n="waiting_subtitle">✨ 当前暂无可用免费车位，请耐心等待 ✨</p>
+            {% if festive_enabled %}
+            <div class="newyear-chip" data-i18n="newyear_chip">🐴 马年大吉</div>
+            {% endif %}
+        </div>
+
+        <!-- 返回按钮 -->
+        <div style="margin-bottom: 1rem; display:flex; gap:8px;">
+            <a href="/" class="btn btn-secondary"
+                style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;width:auto;">
+                <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> <span
+                    data-i18n="back_to_redeem">返回兑换页</span>
+            </a>
+            <a href="/free-spot" class="btn btn-secondary"
+                style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;width:auto;">
+                <i data-lucide="refresh-cw" style="width:16px;height:16px;"></i> <span
+                    data-i18n="waiting_recheck">重新检查车位</span>
+            </a>
+        </div>
+
+        <!-- 候车室主面板 -->
+        <div class="card">
+            <div style="text-align:center;padding:2rem 1rem 1rem;">
+                <div style="font-size:4rem;margin-bottom:0.8rem;">🚏</div>
+                <h2 style="font-size:1.3rem;color:#92400e;margin-bottom:0.5rem;" data-i18n="waiting_title">候车室</h2>
+                <div
+                    style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:20px;margin-bottom:1rem;">
+                    <span
+                        style="display:inline-block;width:8px;height:8px;background:#f59e0b;border-radius:50%;animation:pulse 1.5s infinite;"></span>
+                    <span style="font-size:0.9rem;color:#92400e;"><span data-i18n="waiting_count_prefix">当前</span>
+                        <strong id="waitingCount">-</strong> <span data-i18n="waiting_count_suffix">人正在候车</span></span>
+                </div>
+                <style>
+                    @keyframes pulse {
+
+                        0%,
+                        100% {
+                            opacity: 1;
+                        }
+
+                        50% {
+                            opacity: 0.4;
+                        }
+                    }
+                </style>
+                <p style="color:#999;font-size:0.95rem;margin-bottom:1.5rem;" data-i18n="waiting_desc">
+                    当前所有免费车位已满，留下邮箱后有车位会通知您</p>
+            </div>
+
+            <!-- 加入候车室表单 -->
+            <div id="joinForm" style="max-width:400px;margin:0 auto;padding:0 1rem 2rem;">
+                <div class="form-group">
+                    <label for="waitingEmail" style="font-weight:600;color:#92400e;">
+                        <i data-lucide="mail"
+                            style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i><span
+                            data-i18n="waiting_email_label">您的邮箱</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="email" id="waitingEmail" required placeholder="请输入您的邮箱地址" class="form-input"
+                            data-i18n-placeholder="email_placeholder">
+                    </div>
+                    <p class="form-help" data-i18n="waiting_email_help">车位开放时会向此邮箱发送通知</p>
+                </div>
+                <button type="button" class="btn btn-primary" id="joinWaitingBtn" onclick="joinWaitingRoom()"
+                    style="width:100%;">
+                    <i data-lucide="bell"></i> <span data-i18n="waiting_join_btn">加入候车室</span>
+                </button>
+            </div>
+
+            <!-- 加入成功后显示 -->
+            <div id="joinSuccess" style="display:none;text-align:center;padding:1.5rem 1rem 2rem;">
+                <div
+                    style="padding:1.4rem;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.18);border-radius:12px;max-width:400px;margin:0 auto;">
+                    <div style="font-size:2.5rem;margin-bottom:0.5rem;">✅</div>
+                    <div style="font-weight:600;color:#16a34a;font-size:1.1rem;margin-bottom:0.5rem;"
+                        id="joinSuccessMsg" data-i18n="waiting_joined">已加入候车室</div>
+                    <div style="font-size:0.85rem;color:#666;" data-i18n="waiting_joined_detail">有车位开放时会通过邮件通知您，请留意收件箱
+                    </div>
+                </div>
+            </div>
+
+            {% if idc_enabled %}
+            <!-- IDC 打赏优先处理 -->
+            <div id="idcSection" style="max-width:400px;margin:0 auto;padding:0 1rem 1.5rem;">
+                <div
+                    style="padding:1.2rem;background:linear-gradient(135deg,rgba(99,102,241,0.06),rgba(168,85,247,0.08));border:1px solid rgba(99,102,241,0.2);border-radius:12px;">
+                    <div style="text-align:center;margin-bottom:0.8rem;">
+                        <span style="font-size:1.5rem;">⚡</span>
+                        <h3 style="font-size:1.05rem;color:#4f46e5;margin:0.3rem 0 0;">不想等太久？</h3>
+                    </div>
+                    <p style="color:#666;font-size:0.88rem;text-align:center;margin-bottom:1rem;line-height:1.6;">
+                        打赏 <strong style="color:#4f46e5;font-size:1.1rem;">{{ idc_amount }}</strong> IDC，管理员将会优先处理你的请求
+                    </p>
+                    <p style="color:#999;font-size:0.78rem;text-align:center;margin-bottom:1rem;">
+                        IDC 是 <a href="https://linux.do" target="_blank" style="color:#6366f1;">LinuxDo</a> 社区的积分
+                    </p>
+
+                    <div class="form-group" style="margin-bottom:0.8rem;">
+                        <div class="input-wrapper">
+                            <input type="email" id="idcEmail" placeholder="请输入您的邮箱地址" class="form-input"
+                                style="text-align:center;">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn" id="idcPayBtn" onclick="createIdcOrder()"
+                        style="width:100%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;padding:0.7rem;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.95rem;">
+                        <i data-lucide="zap" style="width:16px;height:16px;vertical-align:-2px;margin-right:4px;"></i>
+                        打赏 {{ idc_amount }} IDC 优先处理
+                    </button>
+                </div>
+            </div>
+
+            <!-- 打赏成功提示 -->
+            <div id="idcPaidSuccess" style="display:none;max-width:400px;margin:0 auto;padding:0 1rem 1.5rem;">
+                <div
+                    style="padding:1.4rem;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.18);border-radius:12px;text-align:center;">
+                    <div style="font-size:2.5rem;margin-bottom:0.5rem;">🎉</div>
+                    <div style="font-weight:600;color:#4f46e5;font-size:1.1rem;margin-bottom:0.5rem;">打赏成功！</div>
+                    <div style="font-size:0.85rem;color:#666;">您的请求已标记为优先，管理员会尽快为您处理</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 温馨提示 -->
+            <div style="max-width:400px;margin:0 auto;padding:0 1rem 1.5rem;">
+                <div
+                    style="padding:1rem;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:10px;">
+                    <p style="font-weight:600;color:#92400e;margin-bottom:0.6rem;font-size:0.9rem;">
+                        <i data-lucide="info"
+                            style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i><span
+                            data-i18n="waiting_tip_title">温馨提示</span>
+                    </p>
+                    <ul style="color:#666;font-size:0.85rem;line-height:1.8;padding-left:1.2rem;margin:0;">
+                        <li data-i18n="waiting_tip_1">加入候车室后，有车位开放会收到邮件通知</li>
+                        <li data-i18n="waiting_tip_2">收到通知后请尽快前往免费车位页面上车</li>
+                        <li data-i18n="waiting_tip_3">也可以使用兑换码直接兑换，无需等待</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        if (window.lucide) lucide.createIcons();
+
+        // 实时获取候车人数
+        async function refreshWaitingCount() {
+            try {
+                var res = await fetch('/redeem/waiting-room/count');
+                var data = await res.json();
+                var el = document.getElementById('waitingCount');
+                if (el) el.textContent = data.count || 0;
+            } catch (e) { }
+        }
+        refreshWaitingCount();
+        setInterval(refreshWaitingCount, 10000);
+
+        function showToast(message, type) {
+            var toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.className = 'toast toast-' + (type || 'info') + ' show';
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(function () {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        async function joinWaitingRoom() {
+            var emailInput = document.getElementById('waitingEmail');
+            var email = emailInput ? emailInput.value.trim() : '';
+
+            if (!email) {
+                showToast(t('waiting_enter_email'), 'error');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast(t('invalid_email'), 'error');
+                emailInput.focus();
+                return;
+            }
+
+            var btn = document.getElementById('joinWaitingBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="spin"></i> ' + t('waiting_joining');
+            if (window.lucide) lucide.createIcons();
+
+            try {
+                var res = await fetch('/redeem/waiting-room/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                if (!res.ok) {
+                    var err = await res.json().catch(function () { return { detail: t('waiting_join_fail') }; });
+                    showToast(err.detail || t('waiting_join_fail'), 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="bell"></i> ' + t('waiting_join_btn');
+                    if (window.lucide) lucide.createIcons();
+                    return;
+                }
+
+                var data = await res.json();
+                showToast(data.message || t('waiting_joined'), 'success');
+
+                // 显示成功状态
+                document.getElementById('joinForm').style.display = 'none';
+                document.getElementById('joinSuccess').style.display = 'block';
+                document.getElementById('joinSuccessMsg').textContent = data.message || t('waiting_joined');
+
+            } catch (err) {
+                showToast(t('network_error'), 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="bell"></i> ' + t('waiting_join_btn');
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+        // ===== IDC 打赏 =====
+        async function createIdcOrder() {
+            var emailInput = document.getElementById('idcEmail');
+            if (!emailInput) return;
+            var email = emailInput.value.trim();
+
+            // 如果候车室邮箱已填，自动同步
+            if (!email) {
+                var waitingInput = document.getElementById('waitingEmail');
+                if (waitingInput && waitingInput.value.trim()) {
+                    email = waitingInput.value.trim();
+                    emailInput.value = email;
+                }
+            }
+
+            if (!email) {
+                showToast('请输入邮箱地址', 'error');
+                emailInput.focus();
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('请输入有效的邮箱地址', 'error');
+                emailInput.focus();
+                return;
+            }
+
+            var btn = document.getElementById('idcPayBtn');
+            btn.disabled = true;
+            btn.textContent = '正在创建订单...';
+
+            try {
+                var res = await fetch('/redeem/idc/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                if (!res.ok) {
+                    var err = await res.json().catch(function () { return { detail: '创建订单失败' }; });
+                    showToast(err.detail || '创建订单失败', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="zap"></i> 打赏优先处理';
+                    if (window.lucide) lucide.createIcons();
+                    return;
+                }
+
+                var data = await res.json();
+                if (data.success && data.gateway_url && data.form_params) {
+                    showToast('正在跳转到支付页面...', 'success');
+                    // 保存订单号到 localStorage 以便返回后查询
+                    localStorage.setItem('idc_order_no', data.order_no);
+                    localStorage.setItem('idc_email', email);
+                    // 创建隐藏表单，由浏览器直接 POST 到支付网关（携带用户的 LinuxDo session）
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = data.gateway_url;
+                    form.style.display = 'none';
+                    var params = data.form_params;
+                    for (var key in params) {
+                        if (params.hasOwnProperty(key)) {
+                            var input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = params[key];
+                            form.appendChild(input);
+                        }
+                    }
+                    document.body.appendChild(form);
+                    form.submit();
+                } else {
+                    showToast(data.error || '创建订单失败', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="zap"></i> 打赏优先处理';
+                    if (window.lucide) lucide.createIcons();
+                }
+            } catch (err) {
+                showToast('网络错误', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="zap"></i> 打赏优先处理';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        // 支付返回后检查状态
+        (function checkIdcReturn() {
+            var params = new URLSearchParams(window.location.search);
+            var orderNo = params.get('order') || localStorage.getItem('idc_order_no');
+            var paid = params.get('paid');
+
+            if (paid === '1' && orderNo) {
+                // 显示正在确认状态
+                var idcSection = document.getElementById('idcSection');
+                var idcPaidSuccess = document.getElementById('idcPaidSuccess');
+
+                if (idcSection) idcSection.style.display = 'none';
+                if (idcPaidSuccess) {
+                    idcPaidSuccess.style.display = 'block';
+                    idcPaidSuccess.querySelector('div > div:nth-child(2)').textContent = '正在确认支付状态...';
+                }
+
+                // 轮询确认
+                var pollCount = 0;
+                var pollTimer = setInterval(async function () {
+                    pollCount++;
+                    try {
+                        var res = await fetch('/redeem/idc/order-status?out_trade_no=' + encodeURIComponent(orderNo));
+                        var data = await res.json();
+                        if (data.success && data.status === 'paid') {
+                            clearInterval(pollTimer);
+                            localStorage.removeItem('idc_order_no');
+                            localStorage.removeItem('idc_email');
+                            if (idcPaidSuccess) {
+                                idcPaidSuccess.querySelector('div > div:nth-child(2)').textContent = '打赏成功！';
+                                idcPaidSuccess.querySelector('div > div:nth-child(3)').textContent = '您的请求已标记为优先，管理员会尽快为您处理';
+                            }
+                            showToast('打赏成功！您的请求已标记为优先', 'success');
+                        } else if (pollCount >= 12) {
+                            clearInterval(pollTimer);
+                            if (idcPaidSuccess) {
+                                idcPaidSuccess.querySelector('div > div:nth-child(2)').textContent = '等待支付确认...';
+                                idcPaidSuccess.querySelector('div > div:nth-child(3)').textContent = '如已完成支付，请稍后刷新页面查看';
+                            }
+                        }
+                    } catch (e) {
+                        if (pollCount >= 12) clearInterval(pollTimer);
+                    }
+                }, 3000);
+            }
+        })();
+    </script>
+    {% if festive_enabled %}
+    <script src="/static/js/celebration.js"></script>
+    <script>
+        if (typeof startPhysicsBlossoms === 'function') startPhysicsBlossoms();
+        if (typeof initCoupletRotation === 'function') initCoupletRotation();
+    </script>
+    {% endif %}
+</body>
+
+</html>
