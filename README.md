@@ -122,26 +122,16 @@ ADMIN_PASSWORD=admin123
 # 日志配置
 LOG_LEVEL=INFO
 
-# 代理配置（可选）
+# 代理配置（可选，推荐在管理员后台网页端图形化配置）
 PROXY_ENABLED=False
 PROXY=
 
 # JWT 配置
 JWT_VERIFY_SIGNATURE=False
 
-# LinuxDo OAuth 配置（仅 LinuxDo 登录/注册）
-LINUXDO_OAUTH_ENABLED=False
-LINUXDO_CLIENT_ID=
-LINUXDO_CLIENT_SECRET=
-LINUXDO_AUTHORIZE_URL=https://connect.linux.do/oauth2/authorize
-LINUXDO_TOKEN_URL=https://connect.linux.do/oauth2/token
-LINUXDO_USERINFO_URL=https://connect.linux.do/api/user
-LINUXDO_SCOPE=read
-LINUXDO_REDIRECT_PATH=/user/auth/callback
-
-# 积分配置
-USER_DAILY_SIGNIN_POINTS=10
-SHOP_REDEEM_CODE_COST=100
+# 💡 注意提示 💡
+# LinuxDo OAuth 配置、积分商城配置、网站公告、系统维护模式、外部 API、质保天数及所有系统级的动态设置，
+# 现已全面迁移至 管理员后台（/admin/settings）通过图形界面动态配置，无需且不应在 .env 中设置。
 ```
 
 ### 5. 初始化数据库
