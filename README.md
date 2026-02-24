@@ -67,38 +67,24 @@
 - pip（Python 包管理器）
 - 操作系统：Windows / Linux / macOS
 
-## 🚀 快速开始
+## � 快速开始 (Docker 部署，推荐)
 
-### 1. 克隆项目
+项目支持使用 Docker 快速部署，确保环境一致性并简化配置。
+
+### 1. 准备工作
+
+确保你的系统已安装：
+- Docker
+- Docker Compose
+
+### 2. 获取项目并配置
 
 ```bash
+# 克隆项目并进入目录
 git clone <repository-url>
 cd team-manage
-```
 
-### 2. 创建虚拟环境
-
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# Linux/macOS
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 3. 安装依赖
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. 配置环境变量
-
-复制 `.env.example` 为 `.env` 并修改配置：
-
-```bash
+# 复制配置文件
 cp .env.example .env
 ```
 
@@ -134,23 +120,16 @@ JWT_VERIFY_SIGNATURE=False
 # 现已全面迁移至 管理员后台（/admin/settings）通过图形界面动态配置，无需且不应在 .env 中设置。
 ```
 
-### 5. 初始化数据库
+### 3. 启动应用
 
 ```bash
-python init_db.py
+# 构建并启动容器
+docker compose up -d
 ```
 
-### 6. 启动应用
+Docker 配置中已自动将宿主机的 `data/` 目录和 `.env` 文件映射到容器内部，因此你的数据会自动保存在项目根目录下，容器重启或删除后数据依然存在。
 
-```bash
-# 开发模式（自动重载）
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8008
-
-# 或者直接运行
-python app/main.py
-```
-
-### 7. 访问应用
+### 4. 访问应用
 
 - **用户兑换页面**: http://localhost:8008/
 - **LinuxDo 用户中心**: http://localhost:8008/user/points
@@ -159,36 +138,9 @@ python app/main.py
 
 **默认管理员账号**:
 - 用户名: `admin`
-- 密码: `admin123`（请在首次登录后修改）
+- 密码: `admin123`（建议在首次登录后在后台修改密码配置）
 
----
-
-## 🐳 Docker 部署 (推荐)
-
-项目支持使用 Docker 快速部署，确保环境一致性并简化配置。
-
-### 1. 准备工作
-
-确保你的系统已安装：
-- Docker
-- Docker Compose
-
-### 2. 快速启动
-
-1.  克隆项目并进入目录。
-2.  配置 `.env` 文件（参考上述"配置环境变量"章节）。
-3.  运行 Docker Compose 命令：
-
-```bash
-# 构建并启动容器
-docker compose up -d
-```
-
-### 3. 数据持久化
-
-Docker 配置中已自动将宿主机的 `team_manage.db` 文件映射到容器内部，因此你的数据会自动保存在项目根目录下，容器删除后数据依然存在。
-
-### 4. 常用命令
+### 5. 常用 Docker 命令
 
 ```bash
 # 查看日志
@@ -200,6 +152,47 @@ docker compose down
 # 重新构建镜像
 docker compose build --no-cache
 ```
+
+---
+
+## 💻 源码运行 (二选一，面向开发者)
+
+### 1. 创建虚拟环境
+
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# Linux/macOS
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 2. 安装依赖
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. 初始化数据库
+
+```bash
+python init_db.py
+```
+
+### 4. 启动应用
+
+```bash
+# 开发模式（自动重载）
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8008
+
+# 或者直接运行
+python app/main.py
+```
+
+
+
 
 ## 📁 项目结构
 
