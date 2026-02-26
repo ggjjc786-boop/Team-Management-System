@@ -119,11 +119,11 @@
 </div>
 
 <!-- 积分调整模态框 -->
-<div id="adjustPointsModal" class="modal">
-    <div class="modal-content" style="max-width:400px;">
+<div id="adjustPointsModal" class="modal-overlay">
+    <div class="modal" style="max-width:400px;">
         <div class="modal-header">
             <h3>调整用户积分</h3>
-            <button class="close" onclick="closeModal('adjustPointsModal')">&times;</button>
+            <button class="modal-close" onclick="hideModal('adjustPointsModal')">&times;</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
@@ -145,8 +145,9 @@
                 <input type="text" id="adjustDescription" class="form-input" placeholder="例如: 活动奖励" value="管理员手动调整">
             </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('adjustPointsModal')">取消</button>
+        <div class="modal-footer"
+            style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button class="btn btn-secondary" onclick="hideModal('adjustPointsModal')">取消</button>
             <button class="btn btn-primary" onclick="submitAdjustPoints()" id="btnSubmitAdjust">
                 <i data-lucide="save"></i> 确认调整
             </button>
