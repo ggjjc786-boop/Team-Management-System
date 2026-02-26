@@ -1216,6 +1216,8 @@ async def admin_users_page(
         "admin/users/index.html",
         {
             "request": request,
+            "user": current_user,
+            "active_page": "users",
             "users": users,
             "search": search or "",
             "current_page": page_num,
